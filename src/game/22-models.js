@@ -356,7 +356,7 @@ function streetLifeVisual(key){
  toRemove.forEach(o=>o.parent?.remove(o));
  model.updateMatrixWorld(true);
  let box=new THREE.Box3();model.traverse(o=>{if(o.isMesh&&o.visible)box.expandByObject(o);});if(box.isEmpty())box.setFromObject(model);
- const rotY=(key==='traffic_bus3d'||key==='traffic_tuktuk')?-Math.PI/2:Math.PI/2;
+ const rotY=key==='traffic_bus3d'?-Math.PI/2:Math.PI/2;
  model.rotation.y=rotY;model.updateMatrixWorld(true);
  box.makeEmpty();model.traverse(o=>{if(o.isMesh&&o.visible)box.expandByObject(o);});if(box.isEmpty())box.setFromObject(model);
  const size=box.getSize(new THREE.Vector3()),horizontal=Math.max(size.x,size.z);

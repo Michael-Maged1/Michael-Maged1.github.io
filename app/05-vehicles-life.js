@@ -2236,9 +2236,13 @@ function updateAssyutTraffic(dt){
    const dx=o.mesh.position.x-tx,dz=o.mesh.position.z-tz;
    if(Math.abs(dx)>46||Math.abs(dz)>46)continue;
    const q=streetAhead(t,o.mesh.position);
-   if(q.along>0&&q.along<45&&Math.abs(q.across)<t.hw+o.hw+.35&&q.along-t.hl-o.hl<nearest){
+   if(q.along>0&&q.along<45&&Math.abs(q.across)<t.hw+o.hw+.45&&q.along-t.hl-o.hl<nearest){
     nearest=q.along-t.hl-o.hl;leaderSpeed=o.speed;leader=o;
    }
+  }
+  if(nearest<0.15&&leader&&leader!==car){
+   t.speed=0;
+   t.s=Math.max(0,t.s-Math.min(0.8,(0.25-nearest)*0.5));
   }
   const player=streetAhead(t,{x:car.x,z:car.z}),playerForward=Math.cos(car.heading)*f.fx-Math.sin(car.heading)*f.fz;
   if(Math.abs(car.y-ty)<=2.2&&player.along>0&&player.along<45&&Math.abs(player.across)<t.hw+vehicleParameters().halfWidth+.35&&player.along-t.hl-vehicleParameters().halfLength<nearest){nearest=player.along-t.hl-vehicleParameters().halfLength;leaderSpeed=Math.max(0,car.speed*playerForward);leader=car;}
