@@ -1648,8 +1648,8 @@ REAL_CITY.isVillageSeg=isVillageSeg;
     const lb={x:lerp(seg.a.x,seg.b.x,Math.min(d+3.2,seg.length)/seg.length),z:lerp(seg.a.z,seg.b.z,Math.min(d+3.2,seg.length)/seg.length)};
     for(const s of[-1,1])quad(lines,null,la,lb,.12,.036,s*laneShift);
    }
-  }else if(seg.width>=11&&seg.length>10){for(const yo of[-.14,.14])quad(yellowLines,null,seg.a,seg.b,.11,.037,yo);}
-  else if(seg.width>=8.5&&seg.length>7)for(let d=2;d<seg.length-2;d+=9){const a={x:lerp(seg.a.x,seg.b.x,d/seg.length),z:lerp(seg.a.z,seg.b.z,d/seg.length)},b={x:lerp(seg.a.x,seg.b.x,Math.min(d+3.2,seg.length)/seg.length),z:lerp(seg.a.z,seg.b.z,Math.min(d+3.2,seg.length)/seg.length)};quad(lines,null,a,b,.13,.036);}
+  }else if(seg.width>=9.0&&seg.length>8){for(const yo of[-.14,.14])quad(yellowLines,null,seg.a,seg.b,.12,.038,yo);}
+  else if(seg.width>=5.5&&seg.length>6){const isOneWay=!!ASSYUT.roads[seg.road]?.oneway;if(!isOneWay){for(let d=1.5;d<seg.length-1.5;d+=6.5){const a={x:lerp(seg.a.x,seg.b.x,d/seg.length),z:lerp(seg.a.z,seg.b.z,d/seg.length)},b={x:lerp(seg.a.x,seg.b.x,Math.min(d+3.0,seg.length)/seg.length),z:lerp(seg.a.z,seg.b.z,Math.min(d+3.0,seg.length)/seg.length)};quad(yellowLines,null,a,b,.13,.038);}}}
   if(seg.width>=11&&seg.length>12)for(const sside of[-1,1])quad(lines,null,seg.a,seg.b,.11,.035,sside*(seg.width/2-.32));
   if(seg.width>=8&&seg.length>12){for(const endPos of[seg.aNode,seg.bNode])if(nodeDeg[endPos]>=3){const base=endPos===seg.aNode?4.2:seg.length-4.2,ca={x:lerp(seg.a.x,seg.b.x,base/seg.length),z:lerp(seg.a.z,seg.b.z,base/seg.length)},cb={x:lerp(seg.a.x,seg.b.x,(base+1.9)/seg.length),z:lerp(seg.a.z,seg.b.z,(base+1.9)/seg.length)};for(let off=-seg.width*.38;off<=seg.width*.38;off+=1.15)quad(lines,null,ca,cb,.42,.038,off);}}
  }

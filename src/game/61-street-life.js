@@ -68,9 +68,10 @@ function initializeStreetTraffic(){
  for(let i=0;i<170;i++){
   const r=Math.random(),kind=i===0?'bicycle':i===1?'motorcycle':r<.10?'bicycle':r<.21?'motorcycle':r<.27?'tuktuk':r<.37?'micro':r<.42?'bus':r<.71?'modern':'car';
   const color=kind==='tuktuk'?0x16181e:pick(TRAFFIC_COLORS),mesh=['bicycle','motorcycle'].includes(kind)?makeTwoWheeler(kind,color):makeTrafficCar(kind,color);
-  const pool=(i<90&&near.length?near:eligible).filter(e=>kind!=='bus'||lifeRoad(e).width>=10),edge=pick(pool.length?pool:eligible),frame=edgeFrame(edge),s=rand(0,frame.length),width=lifeRoad(edge).width,offset=kind==='bicycle'?Math.max(.4,width/2-.65):Math.min(width*.26,2.3);
-  const y=infrastructureEdgeHeight(edge,s),p={x:frame.a.x+frame.fx*s-frame.fz*offset,z:frame.a.z+frame.fz*s+frame.fx*offset};
+  const pool=(i<90&&near.length?near:eligible).filter(e=>kind!=='bus'||lifeRoad(e).width>=10),edge=pick(pool.length?pool:eligible),frame=edgeFrame(edge),s=rand(0,frame.length),width=lifeRoad(edge).width;
   const hl=kind==='bicycle'?.90:kind==='motorcycle'?1.02:TRAFFIC_DIMS[kind][0],hw=kind==='bicycle'?.36:kind==='motorcycle'?.41:TRAFFIC_DIMS[kind][1];
+  const offset=kind==='bicycle'?Math.max(.55,width/2-.65):Math.max(hw+.25,Math.min(width*.27,width/2-hw-.15));
+  const y=infrastructureEdgeHeight(edge,s),p={x:frame.a.x+frame.fx*s-frame.fz*offset,z:frame.a.z+frame.fz*s+frame.fx*offset};
   if(!trafficFootprintClear(p.x,p.z,Math.atan2(-frame.fz,frame.fx),hl+.45,hw+.12,y))continue;
   if(traffic.some(t=>Math.hypot(t.mesh.position.x-p.x,t.mesh.position.z-p.z)<8.5&&Math.abs((t.mesh.position.y||0)-y)<2.5))continue;
   if(kind==='car'||kind==='modern'){
