@@ -1450,7 +1450,7 @@ function nearbyNavigationStop(from,minDistance=65,maxDistance=350){
   const d=Math.hypot((s.a.x+s.b.x)/2-from.x,(s.a.z+s.b.z)/2-from.z);
   return d>=minDistance*0.7&&d<=maxDistance*0.95;
  });
- for(let tries=0;tries<Math.min(8,candidates.length);tries++){const index=Math.floor(Math.random()*candidates.length),s=candidates.splice(index,1)[0],offset=Math.max(.5,s.width/2-2),nx=-(s.b.z-s.a.z)/s.length,nz=(s.b.x-s.a.x)/s.length,sign=ASSYUT.roads[s.road].oneway==='-1'?-1:1,p={x:(s.a.x+s.b.x)/2+nx*offset*sign,z:(s.a.z+s.b.z)/2+nz*offset*sign,roadIndex:s.road,name:ASSYUT.roads[s.road].name},route=roadRoute(from,p);if(route.reachable&&route.length>=minDistance&&route.length<=maxDistance)return {...p,route};}
+ for(let tries=0;tries<Math.min(18,candidates.length);tries++){const index=Math.floor(Math.random()*candidates.length),s=candidates.splice(index,1)[0],offset=Math.max(.5,s.width/2-2),nx=-(s.b.z-s.a.z)/s.length,nz=(s.b.x-s.a.x)/s.length,sign=ASSYUT.roads[s.road].oneway==='-1'?-1:1,p={x:(s.a.x+s.b.x)/2+nx*offset*sign,z:(s.a.z+s.b.z)/2+nz*offset*sign,roadIndex:s.road,name:ASSYUT.roads[s.road].name},route=roadRoute(from,p);if(route.reachable&&route.length>=minDistance&&route.length<=maxDistance)return {...p,route};}
  return null;
 }
 function remainingNavigationPoints(){const nav=RIDE.navigation,p=navigationProgress(nav);return p?[{x:p.x,z:p.z},...nav.points.slice(p.index+1)]:nav?.points||[];}
