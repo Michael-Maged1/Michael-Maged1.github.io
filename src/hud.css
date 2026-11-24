@@ -359,11 +359,11 @@ canvas{display:block}
   font-family:'Chakra Petch',sans-serif;
 }
 
-/* ================= GTA V BOTTOM-LEFT RADAR ================= */
+/* ================= GTA V RADAR ABOVE STEERING ARROWS ================= */
 #minimapWrap{
   position:absolute;
-  bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);
-  left:calc(env(safe-area-inset-left, 0px) + 22px);
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 178px);
+  left:calc(env(safe-area-inset-left, 0px) + 18px);
   top:auto;
   right:auto;
   width:160px;
@@ -664,14 +664,14 @@ canvas{display:block}
   box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 18px var(--neo-emerald-glow);
 }
 
-/* ================= 2070 DRIVER PHONE ================= */
+/* ================= 2070 DRIVER PHONE (RIGHT, ABOVE PEDALS) ================= */
 #driverPhone{
   position:fixed;
-  right:calc(env(safe-area-inset-right, 0px) + 185px);
-  bottom:calc(env(safe-area-inset-bottom, 0px) + 16px);
-  width:260px;
-  max-height:calc(100dvh - 36px);
-  min-height:180px;
+  right:calc(env(safe-area-inset-right, 0px) + 18px);
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 195px);
+  width:255px;
+  max-height:calc(100dvh - 345px);
+  min-height:170px;
   background:linear-gradient(180deg,#fcfdfd 0%,#f0f4f2 100%);
   border:5px solid #0d1824;
   border-radius:26px;
@@ -1693,7 +1693,7 @@ body.touch #camBar { display: none; }
   #brand .wallet { font-size: 11px; }
   #brand .wallet b { font-size: 15px; }
   .driverMetrics { display: none; }
-  #minimapWrap { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: calc(env(safe-area-inset-left, 0px) + 12px); top: auto; right: auto; width: 130px; height: 88px; }
+  #minimapWrap { bottom: calc(env(safe-area-inset-bottom, 0px) + 135px); left: calc(env(safe-area-inset-left, 0px) + 12px); top: auto; right: auto; width: 130px; height: 88px; }
   #hudNav { top: calc(env(safe-area-inset-top, 0px) + 62px); padding: 3px 10px; font-size: 10px; }
   #clock b { font-size: 11px; }
   #zoneBadge { font-size: 9px; }
@@ -1708,12 +1708,12 @@ body.touch #camBar { display: none; }
   .mDest { font-size: 12px; }
   .mFare { font-size: 17px; }
   
-  /* In-game Driver Phone in Landscape (height <= 520px: placed to the left of the pedals to eliminate overlap) */
+  /* In-game Driver Phone in Landscape (above pedals) */
   #driverPhone {
-    right: calc(env(safe-area-inset-right, 0px) + 195px);
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-    width: min(265px, 42vw);
-    max-height: calc(100dvh - 24px);
+    right: calc(env(safe-area-inset-right, 0px) + 14px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 150px);
+    width: min(250px, 40vw);
+    max-height: calc(100dvh - 220px);
     border-width: 4px;
     border-radius: 20px;
   }
@@ -1774,7 +1774,7 @@ body.touch #camBar { display: none; }
   .mDest { font-size: 11px; }
   .mFare { font-size: 16px; }
   .mBottom { margin-top: 4px; padding-top: 4px; font-size: 9px; }
-  #minimapWrap { width: 130px; height: 88px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: calc(env(safe-area-inset-left, 0px) + 12px); top: auto; right: auto; }
+  #minimapWrap { width: 130px; height: 88px; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); left: calc(env(safe-area-inset-left, 0px) + 12px); top: auto; right: auto; }
   #topSpeedoCluster { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); top: auto; left: auto; transform: scale(0.8); transform-origin: bottom right; }
   #hudNav { top: calc(env(safe-area-inset-top, 0px) + 60px); padding: 3px 8px; font-size: 9px; }
   
