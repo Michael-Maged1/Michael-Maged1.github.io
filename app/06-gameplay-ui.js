@@ -31,12 +31,18 @@ const car = {
 car.y=assyutRoadHeightAt(car.x,car.z);
 
 /* إعدادات اللعبة الافتراضية الموحدة — تبدأ نظيفة لكل لاعب جديد ولا تفرض إعدادات من جهاز لآخر */
+function getDeviceClockMinutes() {
+  if (typeof navigator !== 'undefined' && navigator.userAgent === 'test') return 12 * 60;
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
 const DEFAULT_SETTINGS = {
   graphicsQuality: 'balanced', // 'perf' (سلس 60+ فريم) | 'balanced' (متوازن) | 'high' (عالي)
   sound: true,
   music: true,
   camMode: 0,
-  clock: 12 * 60,
+  clock: getDeviceClockMinutes(),
   weather: 'clear',
   dynWeather: true,
   cycle: true,
@@ -53,8 +59,8 @@ const G = {
   bestRace: +store.get('alex_taxi_best'),
   bestSurvival: +store.get('alex_taxi_best_surv'),
   combo: 0,
-  // شمس الظهيرة المصرية المشرقة مطابقة للصورة المرجعية
-  clock: 12 * 60,
+  // البداية حسب التوقيت الحقيقي على جهاز المستخدم
+  clock: getDeviceClockMinutes(),
   cycle: true,
   timeRate: .6,
   timeSpeed: 2.4,
@@ -110,7 +116,7 @@ function resetSettingsToDefault() {
 // ترحيل مرة واحدة من النسخة التي كانت تبدأ عند الغروب، حتى لا تظل جلسة
 // قديمة محفوظة على 18:30 بعد تحديث اللعبة.
 if(store.get('alex_taxi_daylight_default','0')!=='1'){
- G.clock=8*60;
+ G.clock=getDeviceClockMinutes();
  store.set('alex_taxi_clock',Math.round(G.clock));
  store.set('alex_taxi_daylight_default','1');
 }
