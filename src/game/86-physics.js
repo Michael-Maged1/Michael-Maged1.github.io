@@ -220,6 +220,8 @@ function updateSuspension(dt) {
   car.wheelGround=samples;
   const hf=(samples[0]+samples[1])/2,hr=(samples[2]+samples[3])/2;
   const target=(hf+hr)/2;
+  car.slopeSin = clamp((hf - hr) / Math.max(1.5, wheelbase), -0.28, 0.28);
+  car.airborne = (car.y - target) > 0.08;
   const omega=12/Math.sqrt(Math.max(.55,cs.bumpDamp));
   car.vy+=((target-car.y)*omega*omega-2*.88*omega*car.vy)*dt;
   car.y=clamp(car.y+car.vy*dt,-4,8);

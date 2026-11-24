@@ -4,14 +4,16 @@ const PHYSICS_GRAVITY = 9.81;
 function approachZero(value, amount) { return Math.sign(value) * Math.max(0, Math.abs(value) - amount); }
 function vehicleParameters() {
  const stats=carStats(),definition=CARS[G.carIdx]||CARS[0],kind=definition.body;
- return {...stats, rain:G.weather==='rain',wheelbase:definition.wheelbase||(kind==='micro'?2.95:2.65),
+ const onRoad=typeof onDrivingRoad==='function'?onDrivingRoad(car.x,car.z,0.5):true;
+ return {...stats, rain:G.weather==='rain', offroad:!onRoad, slopeSin:car.slopeSin||0, airborne:!!car.airborne,
+  wheelbase:definition.wheelbase||(kind==='micro'?2.95:2.65),
   halfLength:definition.length?definition.length/2:definition.id==='sunny'?2.2125:kind==='micro'?2.4:2.1, halfWidth:definition.halfWidth||(kind==='micro'?.97:.91),
   mass:definition.mass||(kind==='micro'?2100:kind==='sedan'?1150:1450)};
 }
 function advanceVehicle(s,input,p,dt) {
- const oldSpeed=s.speed,wet=p.rain?.70:1;
+ const oldSpeed=s.speed,wet=p.rain?.70:1,surfaceGrip=p.offroad?.78:1,contactGrip=p.airborne?.35:1;
  const gripBonus=Math.min(1.16,Math.max(.8,p.grip/8.5));
- const traction=PHYSICS_GRAVITY*.94*wet*gripBonus;
+ const traction=PHYSICS_GRAVITY*.94*wet*surfaceGrip*contactGrip*gripBonus;
  let v=s.vel.x*Math.cos(s.heading)-s.vel.y*Math.sin(s.heading);
  const previousSide=s.vel.x*Math.sin(s.heading)+s.vel.y*Math.cos(s.heading);
  let acceleration=0;
@@ -46,15 +48,20 @@ function advanceVehicle(s,input,p,dt) {
   else {s.reverseHold+=dt;if(s.reverseHold>.32)acceleration=-2.6*Math.max(0,1-Math.abs(v)/6);else v=0;}
  } else s.reverseHold=0;
  v+=acceleration*dt;
- const resistance=.18+.0028*v*v+(!input.gas&&!input.brake?.30:0);
+ // جاذبية المنحدرات (الكباري والأنفاق) ومقاومة الهواء والأسفلت
+ const slopeGravity=PHYSICS_GRAVITY*(p.slopeSin||0);
+ v-=slopeGravity*dt;
+ const rollingBase=.18+(p.offroad?.42:0);
+ const resistance=rollingBase+.0028*v*v+(!input.gas&&!input.brake?.30:0);
  v=approachZero(v,resistance*dt);
- if(input.handbrake)v=approachZero(v,(p.rain?3.8:5.2)*dt);
+ if(input.handbrake)v=approachZero(v,(p.rain?3.8:5.2)*dt*(p.airborne?.25:1));
  v=Math.max(-8,Math.min(effectiveTopSpeed,v));
- if(Math.abs(v)<.025&&!input.gas&&!input.brake)v=0;
+ if(Math.abs(v)<.025&&!input.gas&&!input.brake&&Math.abs(p.slopeSin||0)<.02)v=0;
  const steerTarget=(input.left?1:0)-(input.right?1:0);
  const steerRate=(steerTarget===0)?(18+Math.abs(v)*.32):(steerTarget*s.steer<0?24:18);
  s.steer+=(steerTarget-s.steer)*(1-Math.exp(-dt*steerRate));
- const angleLimit=Math.min(.68,Math.atan(traction*1.65*p.wheelbase/(v*v*.62+4))*1.24);
+ const speedSteerDamp=1/(1+Math.max(0,Math.abs(v)-18)*.012);
+ const angleLimit=Math.min(.68,Math.atan(traction*1.65*p.wheelbase/(v*v*.62+4))*1.24)*speedSteerDamp;
  const steeringGain=Math.max(.85,Math.min(1.2,(p.steer||2)/2));
  s.wheelAngle=s.steer*angleLimit*steeringGain;
  let desiredYaw=v/p.wheelbase*Math.tan(s.wheelAngle);
@@ -68,7 +75,7 @@ function advanceVehicle(s,input,p,dt) {
  const fx=Math.cos(s.heading),fz=-Math.sin(s.heading),rx=-fz,rz=fx;
  // Preserve lateral momentum while giving modern street cornering grip under throttle (handbrake still drifts).
  let side=previousSide+v*Math.sin(s.yawRate*dt);
- const sideRate=input.handbrake?1.5:Math.max(12.5,p.grip*1.38)*wet;
+ const sideRate=input.handbrake?1.5:Math.max(12.5,p.grip*1.38)*wet*surfaceGrip*contactGrip;
  const baseBudget=Math.sqrt(Math.max(.35,traction*traction-Math.min(traction*.82,Math.abs(acceleration))**2));
  const lateralBudget=input.handbrake?baseBudget:Math.max(baseBudget,Math.abs(v*s.yawRate)*1.12);
  side=approachZero(side,Math.min(Math.abs(side)*sideRate,lateralBudget)*dt);
@@ -184,9 +191,9 @@ function staticContact(hit) {
  if (closing >= 0) {
   // احتكاك حك مستمر أثناء الانزلاق بجانب مبنى أو سور (Scraping drag)
   if (tangentSpeed > 0.8) {
-   const frictionDecel = Math.min(tangentSpeed * 0.7, 0.45 * SIM_STEP);
-   car.vel.x -= (tangentX / tangentSpeed) * frictionDecel * 60;
-   car.vel.y -= (tangentZ / tangentSpeed) * frictionDecel * 60;
+   const frictionDecel = Math.min(tangentSpeed * 0.5, 6.5 * SIM_STEP);
+   car.vel.x -= (tangentX / tangentSpeed) * frictionDecel;
+   car.vel.y -= (tangentZ / tangentSpeed) * frictionDecel;
    if (typeof sfxScrape === 'function') sfxScrape(Math.min(0.2, tangentSpeed / 15));
    spawnVehicleSparks(car.x - hit.nx * 0.9, car.y + 0.35, car.z - hit.nz * 0.9, tangentX, tangentZ, 3);
   }
