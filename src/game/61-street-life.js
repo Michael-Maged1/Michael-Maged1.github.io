@@ -278,6 +278,21 @@ function updateAssyutTraffic(dt){
   const maxBrake=(t.style==='aggressive'?-9.5:-7.5)*dt;
   t.speed+=clamp(target-t.speed,maxBrake,maxAccel);
   t.speed=Math.max(0,t.speed);
+  if(t.hitStun>0){
+   t.hitStun=Math.max(0,t.hitStun-dt);
+   const nxPos=t.mesh.position.x+(t.knockVelX||0)*dt,nzPos=t.mesh.position.z+(t.knockVelZ||0)*dt;
+   if(trafficFootprintClear(nxPos,nzPos,t.mesh.rotation.y,t.hl,t.hw,t.mesh.position.y)){
+    t.mesh.position.x=nxPos;t.mesh.position.z=nzPos;
+   }else{
+    t.knockVelX=-(t.knockVelX||0)*0.3;t.knockVelZ=-(t.knockVelZ||0)*0.3;
+   }
+   t.knockVelX=(t.knockVelX||0)*Math.exp(-dt*3.2);t.knockVelZ=(t.knockVelZ||0)*Math.exp(-dt*3.2);
+   t.mesh.rotation.y+=(t.knockYaw||0)*dt;t.knockYaw=(t.knockYaw||0)*Math.exp(-dt*4.5);
+   t.mesh.rotation.z=lerp(t.mesh.rotation.z||0,0,1-Math.exp(-dt*6));
+   t.speed*=Math.exp(-dt*3.5);
+   const ky=assyutRoadHeightAt(t.mesh.position.x,t.mesh.position.z);
+   if(Number.isFinite(ky))t.mesh.position.y=ky;
+  }else{
   t.braking=t.speed<old-.015||(t.yielding&&t.speed>.4);
   for(const m of t.mesh.userData.brakeMaterials||[]){m.emissive.setHex(0xff2010);m.emissiveIntensity=t.braking||t.stopAt!==null&&t.speed<.5?.85:.10;}
   t.mesh.rotation.x=0;
@@ -332,12 +347,14 @@ function updateAssyutTraffic(dt){
     if(!list)continue;
     for(const w of list){if(w.steer&&w.front)w.steer.rotation.y+=(steerAngle-w.steer.rotation.y)*Math.min(1,dt*10);if(w.spin)w.spin.rotation.z-=stepDist/(w.radius||.32);}
    }
+   }
   }
   const dx=t.mesh.position.x-car.x,dz=t.mesh.position.z-car.z;
   if(Math.abs((t.mesh.position.y||0)-car.y)<1.9&&dx*dx+dz*dz<64){
    const hit=obbContact(playerBounds(),{x:t.mesh.position.x,z:t.mesh.position.z,heading:t.mesh.rotation.y,hl:t.hl,hw:t.hw});
    if(hit){
-    const closingX=car.vel.x-nf.fx*t.speed,closingZ=car.vel.y-nf.fz*t.speed;
+    const tfx=Math.cos(t.mesh.rotation.y),tfz=-Math.sin(t.mesh.rotation.y);
+    const closingX=car.vel.x-tfx*t.speed,closingZ=car.vel.y-tfz*t.speed;
     const closing=closingX*hit.nx+closingZ*hit.nz;
     car.x+=hit.nx*(hit.depth+.003);car.z+=hit.nz*(hit.depth+.003);
     if(closing<0){
@@ -350,17 +367,30 @@ function updateAssyutTraffic(dt){
      const pArmX=contactX-car.x,pArmZ=contactZ-car.z;
      const pTorque=(pArmX*hit.nz-pArmZ*hit.nx)*(impulse/mass);
      car.yawRate=clamp((car.yawRate||0)+pTorque*0.24,-6.5,6.5);
+     const fx=Math.cos(car.heading),fz=-Math.sin(car.heading),frontDot=hit.nx*fx+hit.nz*fz;
+     car.pitch=clamp((car.pitch||0)+frontDot*(-closing)*0.014,-0.32,0.32);
      car.roll=clamp((car.roll||0)-(hit.nx*pArmZ-hit.nz*pArmX)*0.045,-0.38,0.38);
+
+     // دفع وتدوير السيارة المصطدمة بها حسب كتلتها وزاوية الصدمة
+     const tImpulse=impulse/otherMass;
+     const tArmX=contactX-t.mesh.position.x,tArmZ=contactZ-t.mesh.position.z;
+     t.knockVelX=-hit.nx*tImpulse*1.15;
+     t.knockVelZ=-hit.nz*tImpulse*1.15;
+     t.knockYaw=clamp((tArmX*(-hit.nz)-tArmZ*(-hit.nx))*tImpulse*0.28,-4.5,4.5);
+     t.mesh.rotation.z=clamp((hit.nx*tArmZ-hit.nz*tArmX)*0.04,-0.22,0.22);
+     t.hitStun=clamp(-closing*0.14,0.45,1.8);
+     t.speed=Math.max(0,t.speed-(hit.nx*tfx+hit.nz*tfz)*tImpulse*0.8);
 
      syncCarSpeed();
      recordImpact(-closing,'خبطة! حافظ على مسافة الأمان');
      car.shake=Math.max(car.shake||0,clamp(-closing*0.14,0.35,1.35));
      car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+clamp(-closing*0.16,0.25,1.4),-1.8,1.8);
      if(-closing>3.5&&typeof flashScreen==='function')flashScreen();
-     if(typeof spawnVehicleSparks==='function')spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,14);
+     if(typeof spawnVehicleSparks==='function'&&-closing>2.8)spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,14);
      if(typeof sfxCrash==='function')sfxCrash();
+    }else{
+     t.speed=Math.max(0,Math.min(t.speed,Math.max(0,car.speed)*0.6));
     }
-    t.speed=Math.max(0,Math.min(t.speed,car.speed*0.5));
    }
   }
  }

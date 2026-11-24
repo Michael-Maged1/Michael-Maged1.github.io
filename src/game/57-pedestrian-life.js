@@ -116,24 +116,37 @@ function updateAssyutPeds(dt){
    if(p.knockTimer>0){
     p.knockTimer-=dt;
     p.mesh.position.x+=(p.knockVelX||0)*dt;p.mesh.position.z+=(p.knockVelZ||0)*dt;
-    p.knockVelX*=Math.exp(-dt*4.5);p.knockVelZ*=Math.exp(-dt*4.5);
-    p.mesh.rotation.x=p.knockTimer>0.5?1.38:lerp(p.mesh.rotation.x,0,1-Math.exp(-dt*6));
+    p.knockVelY=(p.knockVelY||0)-14*dt;
+    p.knockH=(p.knockH||0)+p.knockVelY*dt;
     const rh=assyutRoadHeightAt(p.mesh.position.x,p.mesh.position.z);
-    p.mesh.position.y=((rh>0&&rh<0.4)?rh:0)+(p.knockTimer>0.5?0.22:0.18);
+    const groundH=(rh>0&&rh<0.4)?rh:0;
+    if(p.knockH<=0){p.knockH=0;if(p.knockVelY<-1.5)p.knockVelY=-p.knockVelY*0.25;else p.knockVelY=0;p.knockVelX*=Math.exp(-dt*7.5);p.knockVelZ*=Math.exp(-dt*7.5);}
+    else{p.knockVelX*=Math.exp(-dt*1.8);p.knockVelZ*=Math.exp(-dt*1.8);}
+    p.mesh.rotation.x=p.knockTimer>0.5?1.38:lerp(p.mesh.rotation.x,0,1-Math.exp(-dt*6));
+    p.mesh.rotation.z=p.knockTimer>0.5?(p.knockRoll||0.35):lerp(p.mesh.rotation.z,0,1-Math.exp(-dt*6));
+    p.mesh.position.y=groundH+p.knockH+(p.knockTimer>0.5?0.20:0.18);
     continue;
    }
    const near=Math.hypot(p.mesh.position.x-car.x,p.mesh.position.z-car.z);
-   if(near<2.15&&Math.abs(car.speed)>2.2){
+   const sameLevel=Math.abs((p.mesh.position.y||0)-car.y)<2.0;
+   if(sameLevel&&near<2.15&&Math.abs(car.speed)>2.2){
     const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));
-    const push=clamp(Math.abs(car.speed)*0.65,3.5,11);
-    p.knockTimer=2.5;p.knockVelX=(awayX/n)*push;p.knockVelZ=(awayZ/n)*push;
-    p.mesh.position.x+=(awayX/n)*0.8;p.mesh.position.z+=(awayZ/n)*0.8;
-    car.shake=Math.max(car.shake||0,0.45);
+    const spd=Math.abs(car.speed);
+    const carDirX=spd>0.5?car.vel.x/spd:awayX/n,carDirZ=spd>0.5?car.vel.y/spd:awayZ/n;
+    const push=clamp(spd*0.72,3.5,12.5);
+    p.knockTimer=2.8;
+    p.knockVelX=(carDirX*0.68+(awayX/n)*0.32)*push;
+    p.knockVelZ=(carDirZ*0.68+(awayZ/n)*0.32)*push;
+    p.knockVelY=clamp(spd*0.26,2.0,5.2);
+    p.knockH=0.05;
+    p.knockRoll=(Math.random()>.5?1:-1)*0.42;
+    car.vel.x*=0.96;car.vel.y*=0.96;if(typeof syncCarSpeed==='function')syncCarSpeed();
+    car.shake=Math.max(car.shake||0,clamp(spd*0.035,0.28,0.65));
     car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+0.35,-1.8,1.8);
-    if(car.hitCd<=0){car.hitCd=.8;if(typeof sfxBump==='function')sfxBump();else sfxThud();if(typeof flashScreen==='function')flashScreen();if(typeof floatText==='function')floatText('⚠️ صدمت أحد المشاة — انتبه!','#ff685d');setObjective('انتبه للمشاة · خفّف السرعة',2000);}
+    if(car.hitCd<=0){car.hitCd=.8;if(typeof rideBusy==='function'&&rideBusy())M.hits=(M.hits||0)+1;if(typeof sfxThud==='function')sfxThud();if(typeof flashScreen==='function')flashScreen();if(typeof floatText==='function')floatText('⚠️ صدمت أحد المشاة — انتبه!','#ff685d');setObjective('انتبه للمشاة · خفّف السرعة',2000);}
     continue;
    }
-   if(near<2.5&&Math.abs(car.speed)>1){const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
+   if(sameLevel&&near<2.5&&Math.abs(car.speed)>1){const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
    const walkBob=moving?Math.abs(Math.sin(p.phase*2))*.026:0;
    p.mesh.rotation.x=moving?.038:0;
    p.mesh.rotation.z=moving?Math.sin(p.phase)*.022:0;
