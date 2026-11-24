@@ -120,8 +120,12 @@ function safePassingLane(t,target){
 const _trafficDesired = new THREE.Vector3();
 const _trafficCandidate = new THREE.Vector3();
 
+const CACHED_TRAFFIC_EDGES=typeof ASSYUT!=='undefined'?ASSYUT.edges.filter(e=>lifeRoad(e).width>=6&&e.length>=22):[];
+let _trafficRecycleCd=0;
 function updateAssyutTraffic(dt){
  STREET_LIFE.time+=dt;
+ _trafficRecycleCd=Math.max(0,_trafficRecycleCd-dt);
+ let recycledCar=false;
  for(const t of traffic){
   const before={edge:t.edge,s:t.s,offset:t.offset,heading:t.mesh.rotation.y};
   const f=edgeFrame(t.edge),road=lifeRoad(t.edge),remaining=f.length-t.s;
@@ -166,13 +170,18 @@ function updateAssyutTraffic(dt){
     else t.s=0;
    }
    const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test');
-   if(!isTest&&typeof G!=='undefined'&&G.state==='play'&&!t.policeSuspect&&Math.hypot(tx-car.x,tz-car.z)>245){
+   if(!isTest&&!recycledCar&&_trafficRecycleCd<=0&&typeof G!=='undefined'&&G.state==='play'&&!t.policeSuspect&&CACHED_TRAFFIC_EDGES.length&&Math.hypot(tx-car.x,tz-car.z)>245){
     const minW=t.kind==='bus'?10:6;
-    const pool=ASSYUT.edges.filter(e=>{if(ASSYUT.roads[e.road].width<minW||e.length<22)return false;const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);return d>65&&d<185;});
-    if(pool.length){
-     const ne=pick(pool),nf2=edgeFrame(ne),rw=ASSYUT.roads[ne.road].width,ns=rand(4,Math.max(5,nf2.length-4)),noff=Math.min(rw*.26,1.8),nx2=nf2.a.x+nf2.fx*ns-nf2.fz*noff,nz2=nf2.a.z+nf2.fz*ns+nf2.fx*noff,nh2=Math.atan2(-nf2.fz,nf2.fx),ny2=infrastructureEdgeHeight(ne,ns);
-     if(trafficFootprintClear(nx2,nz2,nh2,t.hl,t.hw,ny2)){t.edge=ne;t.s=ns;t.offset=noff;t.laneTarget=noff;t.nextEdge=null;t.curve=null;t.stopAt=null;t.mesh.position.set(nx2,ny2,nz2);t.mesh.rotation.y=nh2;continue;}
+    for(let k=0;k<10;k++){
+     const ne=CACHED_TRAFFIC_EDGES[Math.floor(Math.random()*CACHED_TRAFFIC_EDGES.length)];
+     if(ASSYUT.roads[ne.road].width<minW)continue;
+     const a=ASSYUT.nodes[ne.a],d=Math.hypot(a.x-car.x,a.z-car.z);
+     if(d>65&&d<185){
+      const nf2=edgeFrame(ne),rw=ASSYUT.roads[ne.road].width,ns=rand(4,Math.max(5,nf2.length-4)),noff=Math.min(rw*.26,1.8),nx2=nf2.a.x+nf2.fx*ns-nf2.fz*noff,nz2=nf2.a.z+nf2.fz*ns+nf2.fx*noff,nh2=Math.atan2(-nf2.fz,nf2.fx),ny2=infrastructureEdgeHeight(ne,ns);
+      if(trafficFootprintClear(nx2,nz2,nh2,t.hl,t.hw,ny2)){t.edge=ne;t.s=ns;t.offset=noff;t.laneTarget=noff;t.nextEdge=null;t.curve=null;t.stopAt=null;t.mesh.position.set(nx2,ny2,nz2);t.mesh.rotation.y=nh2;recycledCar=true;_trafficRecycleCd=0.25;break;}
+     }
     }
+    if(recycledCar)continue;
    }
    const nf=edgeFrame(t.edge);
    t.mesh.position.set(nf.a.x+nf.fx*t.s-nf.fz*t.offset,infrastructureEdgeHeight(t.edge,t.s),nf.a.z+nf.fz*t.s+nf.fx*t.offset);
@@ -219,8 +228,10 @@ function updateAssyutTraffic(dt){
    }
   }
   if(!policeYielding){
+   const casualRoad=road.width<9.5;
    if(wide&&nearest<passDist&&leaderSpeed<t.baseSpeed*passRatio&&remaining>35&&t.laneTimer===0&&safePassingLane(t,inner)){t.laneTarget=inner;t.laneTimer=t.style==='aggressive'?rand(3.5,5.5):7;STREET_LIFE.overtakes++;}
-   if(t.laneTimer===0&&t.laneTarget!==outer&&wide&&safePassingLane(t,outer))t.laneTarget=outer;
+   else if(casualRoad&&nearest<passDist&&leaderSpeed<t.baseSpeed*passRatio&&remaining>30&&t.laneTimer===0&&(t.style==='aggressive'||t.kind==='tuktuk'||t.kind==='motorcycle')&&safePassingLane(t,-0.35)){t.laneTarget=-0.35;t.laneTimer=rand(2.5,4.5);STREET_LIFE.overtakes++;}
+   if(t.laneTimer===0&&t.laneTarget!==outer&&(wide||casualRoad)&&safePassingLane(t,outer))t.laneTarget=outer;
   }
   if(t.style==='nimble'||t.kind==='tuktuk'||t.kind==='motorcycle'){
    t.weavePhase=(t.weavePhase||0)+dt*rand(1.2,2.0);

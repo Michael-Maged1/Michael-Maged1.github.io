@@ -43,18 +43,26 @@ function crossingSafe(g){
  if(typeof G!=='undefined'&&G.mode==='police'&&typeof POLICE!=='undefined'&&POLICE.siren&&Math.hypot(dx,dz)<50)return false;
  return !(Math.abs(across)<width/2+2&&toward&&Math.abs(car.speed)>.8&&Math.abs(along)<Math.max(10,Math.abs(car.speed)*4));
 }
+const CACHED_PED_EDGES=typeof ASSYUT!=='undefined'?pedestrianEdges():[];
+let _pedRecycleCd=0;
 function updateAssyutPeds(dt){
  const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test');
+ _pedRecycleCd=Math.max(0,_pedRecycleCd-dt);
+ let recycledOne=false;
  for(const g of WALKING_GROUPS){
   let f=pedestrianFrame(g.edge),moving=g.state!=='wait';
-  if(!isTest&&typeof G!=='undefined'&&G.state==='play'&&g.members.length){
+  if(!isTest&&!recycledOne&&_pedRecycleCd<=0&&typeof G!=='undefined'&&G.state==='play'&&g.members.length&&CACHED_PED_EDGES.length){
    const m0=g.members[0].mesh.position;
    if(Math.hypot(m0.x-car.x,m0.z-car.z)>115){
-    const pool=pedestrianEdges().filter(e=>{const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);return d>35&&d<92;});
-    if(pool.length){
-     g.edge=pick(pool);f=pedestrianFrame(g.edge);g.s=rand(2,Math.max(3,f.len-2));g.state='walk';
-     const nb=groupPosition(g);
-     for(const pm of g.members){pm.knockTimer=0;pm.mesh.rotation.x=0;pm.mesh.position.x=nb.x;pm.mesh.position.z=nb.z;}
+    for(let k=0;k<12;k++){
+     const e=CACHED_PED_EDGES[Math.floor(Math.random()*CACHED_PED_EDGES.length)];
+     const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);
+     if(d>35&&d<92){
+      g.edge=e;f=pedestrianFrame(g.edge);g.s=rand(2,Math.max(3,f.len-2));g.state='walk';
+      const nb=groupPosition(g);
+      for(const pm of g.members){pm.knockTimer=0;pm.mesh.rotation.x=0;pm.mesh.position.x=nb.x;pm.mesh.position.z=nb.z;}
+      recycledOne=true;_pedRecycleCd=0.25;break;
+     }
     }
    }
   }

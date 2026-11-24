@@ -106,7 +106,7 @@ function updateArchitectureDetails(force = false){
   const now = (typeof performance !== 'undefined') ? performance.now() : Date.now();
   if (!force && now - _archTimer < 100 && Math.hypot(car.x - _archLastX, car.z - _archLastZ) < 3) return;
   _archTimer = now; _archLastX = car.x; _archLastZ = car.z;
-  const maxDist2 = (typeof G !== 'undefined' && G.graphicsQuality === 'perf') ? 140 * 140 : 180 * 180;
+  const maxDist2 = (typeof G !== 'undefined' && (G.graphicsQuality === 'low' || G.graphicsQuality === 'perf')) ? 135 * 135 : 170 * 170;
   for(const {mesh,bounds} of nearArchitecture){
    const dx=Math.max(bounds.min.x-car.x,0,car.x-bounds.max.x),dz=Math.max(bounds.min.z-car.z,0,car.z-bounds.max.z);
    mesh.visible=dx*dx+dz*dz<maxDist2;
