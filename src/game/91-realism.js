@@ -314,6 +314,17 @@ function updateCockpitRealism() {
     _wiperEl.innerHTML = '<div id="wiperBladeL" style="position:absolute;bottom:-18px;left:22%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div><div id="wiperBladeR" style="position:absolute;bottom:-18px;left:56%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div>';
     document.body.appendChild(_wiperEl);
   }
+  const blurEl = typeof document !== 'undefined' ? document.getElementById('speedMotionBlur') : null;
+  if (blurEl) {
+    const sp = typeof car !== 'undefined' ? Math.abs(car.speed || 0) : 0;
+    const playing = typeof G !== 'undefined' && G.state === 'play';
+    const intensity = playing ? clamp((sp - 17) / 18, 0, 1) : 0;
+    blurEl.style.opacity = intensity.toFixed(2);
+    if (intensity > 0.02) {
+      const pulse = 1 + 0.03 * Math.sin(performance.now() * 0.025);
+      blurEl.style.transform = `scale(${(1.0 + intensity * 0.08 * pulse).toFixed(3)})`;
+    }
+  }
   const active = typeof G !== 'undefined' && G.state === 'play' && G.camMode === 2 && G.weather === 'rain';
   _wiperEl.style.display = active ? 'block' : 'none';
   if (active) {

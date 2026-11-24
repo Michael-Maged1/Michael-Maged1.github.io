@@ -176,6 +176,8 @@ function updateCamera(dt) {
     // إبقاء الكاميرا داخل النفق وعدم ارتفاعها فوق السقف
     desired = base.clone().addScaledVector(cfwd, -4.4).add(new THREE.Vector3(0, 1.75, 0));
   }
+  const spdBoost = (typeof car !== 'undefined' && G.camMode !== 3) ? clamp((Math.abs(car.speed || 0) - 16) * 0.42, 0, 10) : 0;
+  fov += spdBoost;
   if (camera.fov !== fov || camera.near !== .1) {
     camera.fov = fov; camera.near = .1; camera.updateProjectionMatrix();
   }

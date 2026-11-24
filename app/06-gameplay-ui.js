@@ -3067,10 +3067,10 @@ function advanceVehicle(s,input,p,dt) {
  // Give the brake pedal enough authority at city speeds without allowing
  // an arcade-style instant stop.  The old cap made the heavier cars feel
  // as if the brakes were worn out, especially in the rain.
- const maxBrakeGrip = traction * .95;
+ const maxBrakeGrip = traction * 1.06;
  if(input.gas&&!input.brake) {
   s.reverseHold=0;
-  if(v<-.15)v=approachZero(v,Math.min(p.brake*.42,maxBrakeGrip)*dt);
+  if(v<-.15)v=approachZero(v,Math.min(p.brake*.45,maxBrakeGrip)*dt);
   else {
    const ratio=Math.min(1,Math.max(0,v)/effectiveTopSpeed);
    const dragAtTop=.18+.0028*effectiveTopSpeed*effectiveTopSpeed;
@@ -3079,7 +3079,7 @@ function advanceVehicle(s,input,p,dt) {
   }
  } else if(input.brake) {
   if(v>.04||input.gas) {
-   const brakeMult = Math.min(p.brake*.38*(.58+.42*s.brakePedal), maxBrakeGrip);
+   const brakeMult = Math.min(p.brake*.43*(.62+.38*s.brakePedal), maxBrakeGrip);
    v=approachZero(v,brakeMult*dt);
    s.reverseHold=0;
   }
@@ -4106,6 +4106,8 @@ function updateCamera(dt) {
     // إبقاء الكاميرا داخل النفق وعدم ارتفاعها فوق السقف
     desired = base.clone().addScaledVector(cfwd, -4.4).add(new THREE.Vector3(0, 1.75, 0));
   }
+  const spdBoost = (typeof car !== 'undefined' && G.camMode !== 3) ? clamp((Math.abs(car.speed || 0) - 16) * 0.42, 0, 10) : 0;
+  fov += spdBoost;
   if (camera.fov !== fov || camera.near !== .1) {
     camera.fov = fov; camera.near = .1; camera.updateProjectionMatrix();
   }
@@ -4801,6 +4803,17 @@ function updateCockpitRealism() {
     _wiperEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:12;display:none;overflow:hidden;';
     _wiperEl.innerHTML = '<div id="wiperBladeL" style="position:absolute;bottom:-18px;left:22%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div><div id="wiperBladeR" style="position:absolute;bottom:-18px;left:56%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div>';
     document.body.appendChild(_wiperEl);
+  }
+  const blurEl = typeof document !== 'undefined' ? document.getElementById('speedMotionBlur') : null;
+  if (blurEl) {
+    const sp = typeof car !== 'undefined' ? Math.abs(car.speed || 0) : 0;
+    const playing = typeof G !== 'undefined' && G.state === 'play';
+    const intensity = playing ? clamp((sp - 17) / 18, 0, 1) : 0;
+    blurEl.style.opacity = intensity.toFixed(2);
+    if (intensity > 0.02) {
+      const pulse = 1 + 0.03 * Math.sin(performance.now() * 0.025);
+      blurEl.style.transform = `scale(${(1.0 + intensity * 0.08 * pulse).toFixed(3)})`;
+    }
   }
   const active = typeof G !== 'undefined' && G.state === 'play' && G.camMode === 2 && G.weather === 'rain';
   _wiperEl.style.display = active ? 'block' : 'none';
