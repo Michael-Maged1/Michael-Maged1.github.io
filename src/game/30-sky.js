@@ -163,8 +163,8 @@ function skyPalette(hour, o) {
 const sunDir = new THREE.Vector3(), moonDir = new THREE.Vector3();
 
 function updateDayNight(dt) {
-  // 10 دقائق حقيقية تقريباً لكل فترة (فجر/شروق، نهار، غروب، ليل) = 40 دقيقة للدورة الكاملة
-  const timeRate = (typeof navigator !== 'undefined' && navigator?.userAgent === 'test') ? 2.4 : (G.timeRate ?? 0.6);
+  // 5 دقائق حقيقية تقريباً لكل فترة (فجر/شروق، نهار، غروب، ليل) = 20 دقيقة للدورة الكاملة
+  const timeRate = (typeof navigator !== 'undefined' && navigator?.userAgent === 'test') ? 2.4 : (G.timeRate ?? 1.2);
   if (G.cycle && G.state==='play') G.clock = (G.clock + dt * timeRate) % 1440;
   const hour = G.clock / 60;
   skyPalette(hour, DN);

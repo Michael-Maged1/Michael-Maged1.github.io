@@ -60,7 +60,7 @@ const G = {
   // البداية حسب التوقيت الحقيقي على جهاز المستخدم
   clock: getDeviceClockMinutes(),
   cycle: true,
-  timeRate: .6,
+  timeRate: 1.2,
   timeSpeed: 2.4,
   weather: store.get('alex_taxi_weather', DEFAULT_SETTINGS.weather) || DEFAULT_SETTINGS.weather,
   dynWeather: true,
