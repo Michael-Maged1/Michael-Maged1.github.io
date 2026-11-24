@@ -1,0 +1,9 @@
+{
+  "originalRoads": 1061,
+  "roads": 1257,
+  "segments": 5714,
+  "components": 1,
+  "deadEnds": 0,
+  "minimumWidth": 8,
+  "adaptations": "Two-way gameplay streets, widened alleys, same-level intersection welding, connecting end streets and an inset perimeter loop."
+}

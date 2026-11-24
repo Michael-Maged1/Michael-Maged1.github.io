@@ -1,0 +1,5 @@
+كل ملفات اللعبة والمشروع موجودة هنا.
+شغل: python tools/music-library.py --serve
+ثم افتح: http://localhost:8000/index.html
+لتعديل اللعبة: ملفات src. لإعادة البناء: node build.js --hosted
+الرابط الثابت للنسخة المنشورة الأحدث: https://alexandria-taxi-visual-upgrade.wintrycashew.chatgpt.site/download.html

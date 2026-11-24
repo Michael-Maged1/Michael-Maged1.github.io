@@ -1,0 +1,670 @@
+{
+  "qashqai": {
+    "file": "upload-qashqai.glb",
+    "trafficFile": "upload-qashqai-traffic.glb",
+    "length": 4.425,
+    "paint": [
+      "carpaint_white"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2024-nissan-qashqai-glory-3d26c0e62eaa46f1bbead9f3073540b3",
+      "title": "2024 Nissan Qashqai Glory"
+    },
+    "eye": [
+      -0.1,
+      1.28,
+      -0.37
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.2855697870254517,
+          0.8010925054550171,
+          0.34544262290000916
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.2847360372543335,
+          -0.8010861277580261,
+          0.34544333815574646
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.3870292901992798,
+          0.8010877370834351,
+          0.34544259309768677
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.3871852159500122,
+          -0.801089882850647,
+          0.34544333815574646
+        ]
+      }
+    ]
+  },
+  "roadster": {
+    "file": "upload-roadster.glb",
+    "trafficFile": "upload-roadster-traffic.glb",
+    "length": 4.25,
+    "paint": [
+      "GEOMETRYcarskin_skin2"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2010-nissan-370z-roadster-dcb6c0e14751480997564a817e17da84",
+      "title": "2010 Nissan 370Z Roadster"
+    },
+    "eye": [
+      -0.05,
+      1.14,
+      -0.34
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.2900736331939697,
+          0.7504969835281372,
+          0.36253246665000916
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.2900731563568115,
+          -0.7507287263870239,
+          0.36253246665000916
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.263028621673584,
+          0.7655103206634521,
+          0.36253246665000916
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.2630289793014526,
+          -0.765846848487854,
+          0.36253246665000916
+        ]
+      }
+    ]
+  },
+  "micra": {
+    "file": "upload-micra.glb",
+    "trafficFile": "upload-micra-traffic.glb",
+    "length": 3.715,
+    "paint": [
+      "Paint1"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2004-nissan-march-micra-12-k12-117a4b23752a4659bf6db90522c4b262",
+      "title": "2004 Nissan March / Micra 1.2 K12"
+    },
+    "eye": [
+      -0.1,
+      1.18,
+      -0.31
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.161912441253662,
+          0.6421934366226196,
+          0.3393699526786804
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.161912202835083,
+          -0.6421938538551331,
+          0.3393699526786804
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.2713805437088013,
+          0.6431899666786194,
+          0.3336099684238434
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.2713806629180908,
+          -0.6431900262832642,
+          0.3336099684238434
+        ]
+      }
+    ]
+  },
+  "sentra18": {
+    "file": "upload-sentra18.glb",
+    "trafficFile": "upload-sentra18-traffic.glb",
+    "length": 4.625,
+    "paint": [
+      "Paint_MAT"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2018-nissan-sentra-sylphy-sl-e8d8321daf184fe58e41509964d61141",
+      "title": "2018 Nissan Sentra Sylphy SL"
+    },
+    "eye": [
+      0.15,
+      1.18,
+      -0.36
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.4053168296813965,
+          0.758351743221283,
+          0.32120031118392944
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.4057741165161133,
+          -0.7562839388847351,
+          0.32120031118392944
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.3026022911071777,
+          0.7584114074707031,
+          0.32120031118392944
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.302145004272461,
+          -0.7562837600708008,
+          0.32120031118392944
+        ]
+      }
+    ]
+  },
+  "sport370": {
+    "file": "upload-sport370.glb",
+    "trafficFile": "upload-sport370-traffic.glb",
+    "length": 4.265,
+    "paint": [
+      "20MI_1014010001_002"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2020-nissan-370z-sport-touring-16a10e686dcd4fe3942f904a1879c0e3",
+      "title": "2020 Nissan 370Z Sport Touring"
+    },
+    "eye": [
+      -0.1,
+      1.04,
+      -0.34
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.2606370449066162,
+          0.7781807780265808,
+          0.3410058319568634
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.2602715492248535,
+          -0.7796618342399597,
+          0.34055885672569275
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.3059582710266113,
+          0.780010461807251,
+          0.33984801173210144
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.3054771423339844,
+          -0.7802006006240845,
+          0.33984705805778503
+        ]
+      }
+    ]
+  },
+  "epower": {
+    "file": "upload-epower.glb",
+    "trafficFile": "upload-epower-traffic.glb",
+    "length": 4.649,
+    "paint": [
+      "orange14"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2021-nissan-sentra-sylphy-epower-92a9cabd5ae94cf1a745748652501307",
+      "title": "2021 Nissan Sentra Sylphy ePower"
+    },
+    "eye": [
+      -0.1,
+      1.15,
+      -0.37
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.4003708362579346,
+          0.7991044521331787,
+          0.3346634805202484
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.400370478630066,
+          -0.7976799607276917,
+          0.33466339111328125
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.302577257156372,
+          0.7991046905517578,
+          0.33388927578926086
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.3025774955749512,
+          -0.7976799011230469,
+          0.3338892161846161
+        ]
+      }
+    ]
+  },
+  "versa": {
+    "file": "upload-versa.glb",
+    "trafficFile": "upload-versa-traffic.glb",
+    "length": 4.455,
+    "paint": [
+      "Nissan_Versa__Mk2f___B17__sedan_Sense_HQinterior_2015carpaint1"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2015-nissan-versa-sedan-16-18af87c9490e4acb80a46b70ca8d86ed",
+      "title": "2015 Nissan Versa Sedan 1.6"
+    },
+    "eye": [
+      0.15,
+      1.18,
+      -0.35
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.377472162246704,
+          0.7340862154960632,
+          0.29953235387802124
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.3774685859680176,
+          -0.7325552105903625,
+          0.2995428740978241
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.202158808708191,
+          0.7334045171737671,
+          0.2995307445526123
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.2015469074249268,
+          -0.7352414131164551,
+          0.3015750050544739
+        ]
+      }
+    ]
+  },
+  "xtrail": {
+    "file": "upload-xtrail.glb",
+    "trafficFile": "upload-xtrail-traffic.glb",
+    "length": 4.68,
+    "paint": [
+      "Car_Paint"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2023-nissan-x-trail-4x4-i-f9f2cbdacac74ee7acfe1c731195ccaa",
+      "title": "2023 Nissan X-Trail 4x4-i"
+    },
+    "eye": [
+      -0.1,
+      1.37,
+      -0.39
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.4016565084457397,
+          0.7666177749633789,
+          0.3669769763946533
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.3834600448608398,
+          -0.7666180729866028,
+          0.36705660820007324
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.312670111656189,
+          0.7666178345680237,
+          0.3669769763946533
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.331043004989624,
+          -0.766618013381958,
+          0.36716189980506897
+        ]
+      }
+    ]
+  },
+  "altima": {
+    "file": "upload-altima.glb",
+    "trafficFile": "upload-altima-traffic.glb",
+    "length": 4.9,
+    "paint": [
+      "silver_altima1"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "Ddiaz Design (https://sketchfab.com/ddiaz-design)",
+      "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2023-nissan-altima-teana-5370d8f6b81a41a89eabfa1b91fc7160",
+      "title": "2023 Nissan Altima / Teana"
+    },
+    "eye": [
+      -0.1,
+      1.17,
+      -0.38
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.4813703298568726,
+          0.8022772669792175,
+          0.3385041654109955
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.4769315719604492,
+          -0.8023136258125305,
+          0.33948102593421936
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.3161413669586182,
+          0.8023135662078857,
+          0.33911773562431335
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.3192040920257568,
+          -0.8022773265838623,
+          0.3381408452987671
+        ]
+      }
+    ]
+  },
+  "fiat1300": {
+    "file": "upload-fiat1300.glb",
+    "trafficFile": "upload-fiat1300-traffic.glb",
+    "length": 4.03,
+    "paint": [
+      "Paint_Metallic_Orange_peel_Cream"
+    ],
+    "normalized": true,
+    "source": {
+      "author": "3DDomino (https://sketchfab.com/3DDomino)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/fiat-1300-774522f085b541faa6300d3d04f9f0dd",
+      "title": "Fiat 1300"
+    },
+    "eye": [
+      -0.1,
+      1.15,
+      -0.31
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.317914366722107,
+          0.6143277287483215,
+          0.3305942714214325
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.3186945915222168,
+          -0.6150343418121338,
+          0.33064374327659607
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.0617624521255493,
+          0.6135765314102173,
+          0.354707270860672
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.0621134042739868,
+          -0.6136786341667175,
+          0.3541952669620514
+        ]
+      }
+    ]
+  },
+  "policeSuburban": {
+    "file": "upload-policeSuburban.glb",
+    "trafficFile": "upload-policeSuburban-traffic.glb",
+    "length": 5.7,
+    "paint": [],
+    "source": {
+      "author": "Mateusz Woliński (https://sketchfab.com/jeandiz)",
+      "license": "CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)",
+      "source": "https://sketchfab.com/3d-models/suburban-sheriff-cruiser-116f6a42deb04fd8942e6c632e37901f",
+      "title": "Suburban Sheriff Cruiser"
+    },
+    "normalized": true,
+    "eye": [
+      0.08,
+      1.48,
+      -0.39
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.7400325536727905,
+          0.7678298950195312,
+          1.2570316791534424
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.74003267288208,
+          -0.7622460126876831,
+          1.2570316791534424
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.5888863801956177,
+          0.7678215503692627,
+          1.2554123401641846
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.5888866186141968,
+          -0.762245774269104,
+          1.255412220954895
+        ]
+      }
+    ]
+  },
+  "policeDuster": {
+    "file": "upload-policeDuster.glb",
+    "trafficFile": "upload-policeDuster-traffic.glb",
+    "length": 4.315,
+    "paint": [],
+    "source": {
+      "author": "solid3DDD (https://sketchfab.com/solid3ddd)",
+      "license": "CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/daciarenault-duster-politia-high-poly-model-8f49fb8ed805454e92293b2a4b7b3233",
+      "title": "Dacia/Renault Duster Politia - High-poly Model",
+      "modifications": "Converted from user-provided USDZ with original paint maps, UVs and materials; uniform scale, orientation, geometry detail budgets, four separated wheel pivots; lossless WebP for packed material channels, Meshopt compression."
+    },
+    "normalized": true,
+    "preserveAppearance": true,
+    "police": true,
+    "eye": [
+      0.35,
+      1.25,
+      -0.36
+    ],
+    "wheels": []
+  },
+  "policeBMW": {
+    "file": "upload-policeBMW.glb",
+    "trafficFile": "upload-policeBMW-traffic.glb",
+    "length": 4.71,
+    "paint": [],
+    "source": {
+      "author": "solid3DDD (https://sketchfab.com/solid3ddd)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/2023-320i-xdrive-politia-romana-e08a2a022380471aa2c59f9eb63f2012",
+      "title": "2023 320i xdrive Politia Romana"
+    },
+    "normalized": true,
+    "preserveAppearance": true,
+    "police": true,
+    "eye": [
+      0.1,
+      1.14,
+      -0.37
+    ],
+    "wheels": [
+      {
+        "name": "Wheel_FL",
+        "position": [
+          1.5419399738311768,
+          0.3379198944369102,
+          -0.775267630815506
+        ]
+      },
+      {
+        "name": "Wheel_FR",
+        "position": [
+          1.5419399738311768,
+          0.3379198944369102,
+          0.7752677798271179
+        ]
+      },
+      {
+        "name": "Wheel_RL",
+        "position": [
+          -1.2963824272155762,
+          0.3379198908805847,
+          -0.7752676904201508
+        ]
+      },
+      {
+        "name": "Wheel_RR",
+        "position": [
+          -1.2963824272155762,
+          0.3379198908805847,
+          0.7752676606178284
+        ]
+      }
+    ]
+  }
+}

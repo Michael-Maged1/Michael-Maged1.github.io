@@ -1,0 +1,47 @@
+{
+  "policeSuburban": {
+    "arrest": {
+      "src": "assets/media/police-scenes/boarding.mp4",
+      "label": "مشهد الركوب — فيديو مقدم من اللاعب"
+    },
+    "handoffSecond": {
+      "src": "assets/media/police-scenes/station-second.mp4",
+      "label": "التسليم في قسم ثاني — فيديو مقدم من اللاعب"
+    },
+    "handoffFirst": {
+      "src": "assets/media/police-scenes/station-first.mp4",
+      "optional": true,
+      "label": "التسليم في قسم أول"
+    }
+  },
+  "policeDuster": {
+    "arrest": {
+      "src": "assets/media/police-scenes/boarding.mp4",
+      "label": "مشهد الركوب — فيديو مقدم من اللاعب"
+    },
+    "handoffSecond": {
+      "src": "assets/media/police-scenes/station-second.mp4",
+      "label": "التسليم في قسم ثاني — فيديو مقدم من اللاعب"
+    },
+    "handoffFirst": {
+      "src": "assets/media/police-scenes/station-first.mp4",
+      "optional": true,
+      "label": "التسليم في قسم أول"
+    }
+  },
+  "policeBMW": {
+    "arrest": {
+      "src": "assets/media/police-scenes/boarding.mp4",
+      "label": "مشهد الركوب — فيديو مقدم من اللاعب"
+    },
+    "handoffSecond": {
+      "src": "assets/media/police-scenes/station-second.mp4",
+      "label": "التسليم في قسم ثاني — فيديو مقدم من اللاعب"
+    },
+    "handoffFirst": {
+      "src": "assets/media/police-scenes/station-first.mp4",
+      "optional": true,
+      "label": "التسليم في قسم أول"
+    }
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-11",
+  "map": {
+    "source": "OpenStreetMap",
+    "roads": 1061,
+    "segments": 5294,
+    "districtMeters": [
+      2200,
+      2300
+    ],
+    "buildingStyles": 5,
+    "generatedBuildings": 1162,
+    "limits": "Road widths without tags and building appearance are estimates."
+  },
+  "browser": {
+    "engine": "Chromium + SwiftShader",
+    "loadedModels": 13,
+    "pageErrors": [],
+    "tested": [
+      "exterior and driver views",
+      "start via UI",
+      "accelerator keyboard input",
+      "C camera switch",
+      "landscape mobile showroom",
+      "Qashqai import control present"
+    ],
+    "screenshots": [
+      "streets.png",
+      "cockpit.png",
+      "mobile.png"
+    ]
+  },
+  "tests": [
+    "driver.test.mjs",
+    "dynamics.test.cjs",
+    "scene.test.mjs",
+    "terrain.test.mjs",
+    "signals.test.mjs",
+    "life.test.mjs",
+    "assets.test.mjs",
+    "fleet-migration.test.mjs"
+  ],
+  "limitations": "Software-rendered Chromium verification; no real-device performance benchmark.",
+  "uploadedFleet": {
+    "models": 10,
+    "default": "2024 Nissan Qashqai Glory",
+    "originalUploadedFiles": 10,
+    "fourWheelAssembliesEach": true,
+    "trafficModels": 10,
+    "playerDetail": "approximately 22k–97k triangles",
+    "trafficDetail": "approximately 9k triangles",
+    "browserAssetErrors": [],
+    "browserPageErrors": [],
+    "showroomPurchase": "Micra loaded on demand; 5000 wallet -> 2700 after purchase",
+    "cameraChecks": "All ten checked; Qashqai, Sentra, Versa and Roadster cockpit screenshots inspected",
+    "migration": "Default Qashqai survives reload; wallet, ownership, damage, paint, later car selection preserved"
+  },
+  "qashqai": {
+    "status": "bundled uploaded GLB; default free owned vehicle",
+    "manualImportRequired": false
+  },
+  "police": {
+    "browser": "Full arrest and handoff MP4 playback, next station alternation, 180 reward exactly once, no page/asset errors",
+    "vehicle": "uploaded Suburban; BMW attachment exceeds 32MiB tool limit",
+    "cinematics": "Authored 3D scenes, not real footage",
+    "stations": [
+      "قسم أول",
+      "قسم ثاني"
+    ],
+    "visualRepair": {
+      "appearance": "Restored uploaded Sheriff Cruiser original body texture, paint, decals, glass and native light bar; no replacement body meshes or cockpit",
+      "checks": "Body map identity and color match uploaded GLB; no added body meshes; front/rear/side browser renders; assets/police tests"
+    },
+    "vehicles": {
+      "bundled": [
+        "Suburban Sheriff Cruiser",
+        "Dacia/Renault Duster Police"
+      ],
+      "BMW": "Local original GLB import, IndexedDB persistence; attachment cannot transfer above32MiB; actual model visual details not verified",
+      "shape": "Original livery, colors, body proportions retained; Duster USDZ geometry optimized, four wheel pivots preserved",
+      "pipelineTest": "40MiB fixture imported, switched both directions, paint blocked, live arrest clip completed, restored after reload without browser errors"
+    },
+    "duster": {
+      "sourceFaces": 1182134,
+      "gameTriangles": 150098,
+      "format": "USDZ converted through Pixar USD geometry/material extraction, Blender, lossless WebP packed channels, Meshopt",
+      "license": "CC-BY-4.0",
+      "author": "solid3DDD"
+    }
+  },
+  "performance": {
+    "legacyTraffic120HzMs": 369.25795800000014,
+    "newTrafficAndPedestrians30HzMs": 95.63770499999919,
+    "traffic": 73,
+    "note": "CPU simulation timing only, no GPU FPS claim"
+  },
+  "environment": "300s per 12 game hours, automatic different weather, brake/reverse/turn signal assertions passed",
+  "navigationRepair": {
+    "route": "Monotonic progress, preserved route identity, reachable road stops, lookahead guidance tied to actual camera, trimmed minimap",
+    "boundsMeters": {
+      "uberPickup": 300,
+      "uberTrip": 450,
+      "policeIncident": 350
+    },
+    "arrival": "Tests follow the real generated route to the boarding point; matching road height required",
+    "bridge": "Nine bridge/tunnel profiles traversed with four-wheel layer lock and deck penetration limit",
+    "browser": {
+      "spawnHeight": 0,
+      "spawnOnBridge": false,
+      "bridgeHeight": 3.8,
+      "minMeasuredDeckGap": -0.0168,
+      "pageErrors": 0
+    },
+    "privacy": "Rear window triangles get opaque dark tint; front glass and body texture retained"
+  },
+  "stationDeliveryRepair": {
+    "entry": "Dedicated raised arrival bays on clear local streets, aligned entrances and oriented building collision bounds",
+    "alternation": "Persisted next-station index changes only after successful handoff",
+    "tests": "Both full routes swept with player collision bounds; both bays reached, reward exactly once; all 12 tests passed",
+    "browser": "Two handoffs, next-station alternation, no page errors; cinematic canvas bounds 0,0,1180,740",
+    "video": "Photoreal exports requested from user via Google Flow; no generated realistic video claimed or configured yet",
+    "signs": "Blue-and-white mounted metal road signs, bridge posts rooted at ground level, wall-mounted shop boards and supported adverts"
+  }
+}

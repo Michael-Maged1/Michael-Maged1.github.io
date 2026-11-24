@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>سائق أوبر · وردية أسيوط</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121c18'/%3E%3Crect y='34' width='64' height='18' fill='%2314161c'/%3E%3Ctext x='32' y='30' font-family='Arial' font-size='26' font-weight='bold' text-anchor='middle' fill='%23bcebd1'%3EUD%3C/text%3E%3C/svg%3E">
+<meta name="description" content="محاكاة سائق أوبر في أسيوط: استقبل الطلبات على هاتفك، اختَر الرحلات، واهتم بعربيتك من أرباحك.">
+<meta name="google-adsense-account" content="ca-pub-1820524955775833">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1820524955775833" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+/*__HUD_STYLE__*/
+</head>
+<body>
+
+
+<div id="game"></div>
+<div id="vignetteOverlay" class="vignetteOverlay" aria-hidden="true"></div>
+<aside id="radioStream" class="hidden" aria-label="راديو الأغاني"></aside>
+
+<!-- ================= HUD ================= -->
+<div id="hud" class="hidden">
+  <div id="hudDeck" class="hudDeck">
+    <div id="brand" class="card">
+      <div class="brandTop">
+        <div class="brandMeta">
+          <div class="logo" id="modeTitle">Uber Driver</div>
+          <div class="logoSub" id="modeSubtitle">وردية أسيوط</div>
+        </div>
+        <div id="topbtns">
+          <button class="iconbtn hidden" id="btnSiren" title="السرينة">🚨</button>
+          <button class="iconbtn" id="btnGarage" title="الصيانة والسيارات">🚗</button>
+          <button class="iconbtn hidden" id="btnAch" title="الإنجازات">🎖️</button>
+          <button class="iconbtn" id="btnSettings" title="الإعدادات">⚙️</button>
+          <button style="display:none" class="iconbtn" id="btnMusic" title="الموسيقى">🎵</button>
+          <button class="iconbtn" id="btnSound" title="الصوت">🔊</button>
+        </div>
+      </div>
+      <div class="rankRow">رتبة <b id="rankName">مبتدئ</b> · <span id="xp">0</span> XP</div>
+      <div class="xpbar"><i id="xpfill"></i></div>
+      <div class="brandStats">
+        <div class="wallet"><b id="money">0</b> <span>ج.م · المحفظة</span></div>
+        <div class="driverMetrics">
+          <span>الوردية <b id="shiftEarned">0</b> ج.م</span>
+          <span>الحالة <b id="carCondition">100%</b></span>
+          <span>★ <b id="driverRating">5.00</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="camBar" role="group" aria-label="وجهة النظر">
+      <button class="camBtn active" data-cam="0" type="button">قريب</button>
+      <button class="camBtn" data-cam="1" type="button">بعيد</button>
+      <button class="camBtn" data-cam="2" type="button">التابلوه</button>
+      <button class="camBtn" data-cam="3" type="button">علوي</button>
+    </div>
+  </div>
+
+  <div id="hudNav" class="hudNav">
+    <div id="clock"><b id="clockTime">18:30</b><span>التوقيت</span><i id="nowPlaying">إذاعة الأسيوط</i></div>
+    <div class="hudNavDivider"></div>
+    <div id="zoneBadge">محطة الرمل</div>
+  </div>
+  <div id="trafficSignalHint" class="hidden" role="status"></div>
+
+  <div id="mission" class="card hidden">
+    <div class="mTop">
+      <div class="mIcon" id="mIcon">🧍</div>
+      <div class="mInfo">
+        <div class="mTitle" id="mTitle">الزبون راكب</div>
+        <div class="mDest" id="mDest">—</div>
+      </div>
+      <div class="mFare" id="mFare">0<small>ج.م</small></div>
+    </div>
+    <div class="mBottom">
+      <span id="mDist">—</span>
+      <span id="mTime">—</span>
+    </div>
+  </div>
+
+  <div id="minimapWrap" class="gtaRadarWrap">
+    <canvas id="minimap" width="220" height="140"></canvas>
+    <div class="mmN">N</div>
+    <div id="gtaStatusBars">
+      <div id="gtaHealthBar"><div id="gtaHealthFill"></div></div>
+      <div id="gtaArmorBar"><div id="gtaArmorFill"></div></div>
+    </div>
+  </div>
+
+
+  <div id="combo" class="hidden">كومبو ×2 🔥</div>
+  <div id="prompt"></div>
+
+  <div id="topSpeedoCluster" class="topSpeedoCluster">
+    <div class="clusterBar">
+      <div class="clusterSide left">
+        <span class="clusterIco lightsIco" id="clusterHeadlights" title="الكشافات">💡</span>
+        <span class="clusterTrip"><b id="clusterTripDist">04</b> <small>km</small></span>
+      </div>
+      <div class="clusterGauge">
+        <canvas id="speedoCanvas" width="220" height="88"></canvas>
+        <div class="clusterSpeedReadout">
+          <b id="kmh">0</b>
+          <span>km/h</span>
+        </div>
+      </div>
+      <div class="clusterMirrorWrap" id="clusterMirrorWrap" title="مرآة الصالون الخلفية">
+        <div class="mirrorGlass">
+          <canvas id="rearMirrorCanvas" width="160" height="58"></canvas>
+          <div class="mirrorGlint"></div>
+        </div>
+      </div>
+      <div class="clusterPassengers" id="clusterPassengers" title="عدد الركاب">
+        <span class="passIcon">👥</span>
+        <b id="passengersCount">14</b>
+      </div>
+      <div class="clusterSide right">
+        <span class="clusterIco fuelIco" title="الوقود">⛽</span>
+        <span class="clusterGear" id="gear">D</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="flash"></div>
+</div>
+
+<section id="driverPhone" class="phoneHidden" aria-label="هاتف السائق"></section><button id="driverPhoneChip" class="hidden" aria-label="فتح هاتف السائق"><span class="chipIcon">▣</span><span><b id="driverChipText">متصل</b><small>فتح الهاتف · F</small></span><i class="onlineDot"></i></button>
+<div id="routeGuidance" class="hidden" role="status"></div><section id="policeDispatch" class="hidden" role="status"></section><section id="policeMovie" class="hidden" aria-label="مشهد المهمة"></section>
+<div id="objective"></div>
+<div id="floaty"></div>
+<div id="orientationTip" class="hidden" role="status">
+  <span class="orientIcon">📱</span>
+  <span class="orientText">لتجربة قيادة ممتعة، يُفضل تدوير الهاتف بالعرض (أفقي)</span>
+  <button id="closeOrientTip" type="button" aria-label="إغلاق التنبيه">✕</button>
+</div>
+<div id="desktopControls" class="desktopControlsBar" aria-label="إرشادات التحكم">
+  <span class="ctrlChip"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> قيادة</span>
+  <span class="ctrlChip"><kbd>Space</kbd> يدوي</span>
+  <span class="ctrlChip"><kbd>F</kbd> الهاتف</span>
+  <span class="ctrlChip"><kbd>C</kbd> كاميرا</span>
+  <span class="ctrlChip"><kbd>H</kbd> كلاكس</span>
+  <span class="ctrlChip"><kbd>G</kbd> جراج</span>
+  <span class="ctrlChip"><kbd>Esc</kbd> توقف</span>
+</div>
+
+<!-- ================= LOADING ================= -->
+<div id="loadingScreen" aria-label="شاشة التحميل">
+  <div id="loadSlides" aria-hidden="true">
+    <div class="loadSlide active" style="background-image:url('asset:load-1')"></div>
+    <div class="loadSlide" style="background-image:url('asset:load-2')"></div>
+    <div class="loadSlide" style="background-image:url('asset:load-3')"></div>
+    <div class="loadSlide" style="background-image:url('asset:load-4')"></div>
+  </div>
+  <div class="loadVignette" aria-hidden="true"></div>
+  <div class="loadTop">
+    <div class="frontWordmark"><i></i> ASSIUT <strong>DRIVE</strong></div>
+    <span class="loadTag">أسيوط · وسط المدينة</span>
+  </div>
+  <div class="loadBottom">
+    <div class="loadInfoRow">
+      <div class="loadCopy">
+        <strong id="loadTitle">جاري تجهيز شوارع أسيوط…</strong>
+        <p id="loadTip">اتبع الشريط الأخضر على الأرض والسهم المضيء للوصول لأقرب راكب أو بلاغ.</p>
+      </div>
+      <div class="loadMeta">
+        <span id="loadPct">0%</span>
+        <button id="loadSkip" class="hidden" type="button">دخول القائمة ◀</button>
+      </div>
+    </div>
+    <div class="loadTrack"><div id="loadBarFill"></div></div>
+    <div id="loadStatus">تحميل المركبات والمباني…</div>
+  </div>
+</div>
+
+<!-- ================= LAUNCH TRANSITION OVERLAY ================= -->
+<div id="launchTransition" class="hidden" aria-live="polite">
+  <div class="launchVignette"></div>
+  <div class="launchCard">
+    <div class="launchSpinner">
+      <div class="launchPulse"></div>
+      <span class="launchIcon" id="launchTransIcon">🚗</span>
+    </div>
+    <div class="launchMeta">
+      <strong id="launchTransTitle">جارٍ تجهيز الوردية والانطلاق…</strong>
+      <p id="launchTransTip">تهيئة المحرك ومعالجة الرسوميات لشوارع أسيوط السلسة</p>
+    </div>
+    <div class="launchTrack"><div id="launchBarFill"></div></div>
+    <div class="launchFooter">
+      <span id="launchTransPct">0%</span>
+      <span id="launchTransStatus">تحميل المركبة وتثبيت الإطارات…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MENU ================= -->
+<div id="menu" class="overlay gameFront" data-screen="roles">
+ <div class="frontArtwork" aria-hidden="true"></div><div class="frontVignette" aria-hidden="true"></div>
+ <header class="frontTop"><div class="frontWordmark"><i></i> ASSIUT <strong>DRIVE</strong></div><div class="frontProfile"><span class="profileMark">A</span><span>ملف السائق<small>رصيدك <b id="menuDriverMoney">0</b> ج.م</small></span></div></header>
+ <main class="frontContent">
+  <section id="roleScreen" class="frontScreen" aria-labelledby="frontTitle">
+   <div class="frontEyebrow"><span></span> شوارع مصر. حكايتك أنت.</div>
+   <h1 id="frontTitle">شوارع <span>أسيوط</span></h1>
+   <p class="frontTagline">مدينة واحدة. طريقان للحكاية.</p>
+   <div class="frontSectionLabel"><span>01 / اختر دورك</span><i></i><small>ابدأ ورديتك</small></div>
+   <div class="roleDeck">
+    <button class="roleTile uberTile" data-mode="rides"><span class="tileNumber">01</span><span class="roleImage"><img src="asset:menu-qashqai" alt="نيسان قشقاي — سيارة سائق أوبر"></span><span class="roleCopy"><small>حريتك على الطريق</small><strong>سائق أوبر</strong><span>استقبل المشاوير. اكسب وطوّر عربيتك.</span></span><span class="roleCTA">ابدأ الوردية <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg></span></button>
+    <button class="roleTile patrolTile" data-mode="police" aria-controls="patrolScreen"><span class="tileNumber">02</span><span class="roleImage"><img src="asset:menu-policeSuburban" alt="Suburban Sheriff Cruiser — دورية الشرطة"></span><span class="roleCopy"><small>المدينة تحت حمايتك</small><strong>دورية الشرطة</strong><span>استجب للبلاغات. أمّن شوارع المدينة.</span></span><span class="roleCTA">اختر الدورية <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12"/></svg></span></button>
+   </div>
+   <div id="adMenuBanner" class="adSlotWrap hidden" aria-label="مساحة إعلانية"></div>
+   <span id="menuDriverCar" class="hidden"></span>
+  </section>
+  <section id="patrolScreen" class="frontScreen hidden" aria-labelledby="patrolTitle">
+   <button id="patrolBack" class="frontBack">→ العودة لاختيار الدور</button>
+   <div class="frontEyebrow"><span></span> مركز العمليات / أسيوط</div>
+   <h2 id="patrolTitle" tabindex="-1">اختر <span>دوريتك</span></h2>
+   <p class="frontTagline">عربيتك جاهزة. البلاغ القادم بانتظارك.</p>
+   <div class="frontSectionLabel"><span>02 / تجهيز الدورية</span><i></i><small id="patrolFleetCount">سيارتان جاهزتان</small></div>
+   <div id="patrolVehicleGrid" class="patrolDeck" role="group" aria-label="سيارات الدورية"></div>
+   <div class="patrolLaunch"><p id="patrolSelectionStatus" role="status" aria-live="polite"></p><button id="startPatrol" class="patrolStart">انطلق بالدورية <span>←</span></button></div>
+  </section>
+ </main>
+ <footer class="frontFooter"><nav aria-label="قائمة اللعبة"><button id="menuGarage">الجراج</button><button id="menuSettings">الإعدادات</button><button id="menuSound" aria-label="تبديل الصوت">الصوت</button><button id="menuAch" class="hidden">الإنجازات</button></nav><span class="frontLocation"><i></i> أسيوط، مصر <small>DRIVE YOUR STORY</small></span></footer>
+</div>
+
+<!-- ================= PAUSE ================= -->
+<div id="pause" class="overlay hidden">
+  <div class="panel">
+    <h2>الوردية متوقفة مؤقتًا</h2>
+    <p>الطلبات والرحلة متوقفة معك.</p>
+    <button class="bigBtn" id="btnResume">كمّل ▶</button>
+    <button class="softBtn" id="btnRestart">بدء وردية جديدة</button>
+    <button class="softBtn" id="btnMenu">القائمة الرئيسية</button>
+    <div id="adPauseBanner" class="adSlotWrap compact hidden" aria-label="مساحة إعلانية"></div>
+  </div>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="modal" class="overlay hidden">
+  <div class="panel modalPanel" id="modalPanel"></div>
+</div>
+
+<!-- ================= DRIVING CONTROLS (WHEEL & PEDALS) ================= -->
+<div id="touch" aria-label="أزرار التحكم بالقيادة">
+  <!-- Steering Arrows & Auxiliary Controls (Bottom Left) -->
+  <div id="wheelDeck" class="wheelDeck">
+    <div class="wheelAuxRow">
+      <button class="tbtn small" id="tHonk" title="كلاكس (H)">📢</button>
+      <button class="tbtn small" id="tCam" title="الكاميرا (C)">📷</button>
+      <button class="tbtn small hidden" id="tSiren" title="سرينة الشرطة">🚨</button>
+    </div>
+    <div id="steerDeck" class="steerDeck" dir="ltr" role="group" aria-label="أزرار التوجيه">
+      <button class="tbtn steerBtn steerLeftBtn" id="tL" title="انعطاف يسار (A)" aria-label="انعطاف يسار" type="button">
+        <svg viewBox="0 0 24 24" class="steerSvg" aria-hidden="true"><path d="M15 19l-7-7 7-7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="steerLabel">يسار</span>
+      </button>
+      <button class="tbtn steerBtn steerRightBtn" id="tR" title="انعطاف يمين (D)" aria-label="انعطاف يمين" type="button">
+        <span class="steerLabel">يمين</span>
+        <svg viewBox="0 0 24 24" class="steerSvg" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Pedals Deck (Bottom Right) -->
+  <div id="pedalsDeck" class="pedalsDeck">
+    <div class="pedalsTopRow">
+      <div class="tbtn small handbrakeBtn" id="tHbk" title="فرامل اليد (Space)">
+        <span class="hbCircle">((P))</span>
+      </div>
+      <div class="tbtn small gearToggleBtn" id="tG" title="تبديل الغيار (G)">
+        <b id="tGText">D</b>
+      </div>
+    </div>
+    <div class="pedalsRow">
+      <div class="tbtn pedalBtn brakePedal" id="tBrk" title="فرامل (S / السهم لأسفل)">
+        <div class="pedalTread brakeTread">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <span class="pedalName">BRAKE</span>
+      </div>
+      <div class="tbtn pedalBtn gasPedal" id="tGas" title="تسارع (W / السهم لأعلى)">
+        <div class="pedalTread gasTread">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <span class="pedalName">GAS</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+/*__GAME_SCRIPTS__*/
+</body>
+</html>

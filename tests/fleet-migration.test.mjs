@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';import{createGameHarness}from './harness.mjs';
+const first=createGameHarness({alex_taxi_money:'1234',alex_taxi_owned:'["sunny","bmw","altima"]',alex_taxi_car:'4',alex_driver_version:'1',alex_driver_conditions:'{"altima":74}',alex_taxi_paints:'{"altima":2258534}'}),g=first.context.__game;
+assert.equal(g.CARS[g.G.carIdx].id,'qashqai');assert.ok(g.G.owned.includes('qashqai'));assert.ok(g.G.owned.includes('altima'));assert.equal(g.G.money,1234);assert.equal(g.G.conditions.altima,74);assert.equal(g.G.paints.altima,2258534);assert.equal(g.CARS.filter(c=>c.uploaded&&!c.police).length,10);assert.equal(g.CARS.filter(c=>c.police&&!c.localImport).length,3);
+const beforeAction=createGameHarness(Object.fromEntries(first.storage));assert.equal(beforeAction.context.__game.CARS[beforeAction.context.__game.G.carIdx].id,'qashqai','default survives reload before the first trip');
+assert.ok(g.fleetTransaction('select',g.CARS.findIndex(c=>c.id==='altima')).ok);const reload=createGameHarness(Object.fromEntries(first.storage)),again=reload.context.__game;assert.equal(again.CARS[again.G.carIdx].id,'altima');assert.equal(again.G.money,1234);assert.equal(again.G.conditions.altima,74);
+console.log('Qashqai default grant, ten uploaded models, three police cars, removed legacy cars, and selection persistence passed');
