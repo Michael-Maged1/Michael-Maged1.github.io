@@ -438,32 +438,43 @@ const SIGN_TEXES = [
 
 function billboardTex(i) {
   const ads = [
-    { bg: '#c92a2a', a: '#ffe066', t1: 'شاي العروسة', t2: 'طعم الأصالة', ic: '☕' },
-    { bg: '#123d8a', a: '#7dd3ff', t1: 'كولا أسيوط', t2: 'اسقع من الحر', ic: '🥤' },
-    { bg: '#0f6b5c', a: '#a8ffd8', t1: 'مطعم بحري', t2: 'سمك طازة كل يوم', ic: '🐟' },
-    { bg: '#2b1a5e', a: '#ffd34d', t1: 'تاكسي أسيوط', t2: 'أسطى في كل شارع', ic: '🚕' },
-    { bg: '#7a3b00', a: '#ffe9b0', t1: 'كشري التحرير', t2: 'طبقك عندنا', ic: '🍲' },
+    { bg: '#7a1126', bg2: '#3a0611', a: '#f0c05a', tag: 'بنك مصر · ١٩٨٨٨', t1: 'بنك مصر', t2: 'هفضل كل مرة أجيلك.. هنا مصر', badge: 'BM' },
+    { bg: '#0a2e5c', bg2: '#05152c', a: '#f59e0b', tag: 'بنك القاهرة · ١٦٩٩٠', t1: 'بنك القاهرة', t2: 'اصرف واكسب مع بطاقات بنك القاهرة', badge: 'BDC' },
+    { bg: '#003a70', bg2: '#001a38', a: '#38bdf8', tag: 'CIB Egypt · 19666', t1: 'البنك التجاري الدولي CIB', t2: 'بنك نثق به · حلول رقمية ذكية', badge: 'CIB' },
+    { bg: '#0b5d3b', bg2: '#042b1b', a: '#eab308', tag: 'البنك الأهلي · ١٩٦٢٣', t1: 'البنك الأهلي المصري', t2: 'بنك أهل مصر.. دايماً معاك', badge: 'NBE' },
+    { bg: '#5c1d78', bg2: '#290938', a: '#e879f9', tag: 'WE · ١١١', t1: 'المصرية للاتصالات WE', t2: 'أسرع إنترنت أرضي وموبايل في مصر', badge: 'WE' },
+    { bg: '#b80f28', bg2: '#4d0410', a: '#ffffff', tag: 'فودافون كاش · *9#', t1: 'فودافون مصر', t2: 'حوّل فلوسك واستقبلها في ثانية', badge: 'VF' },
+    { bg: '#991b1b', bg2: '#2d0707', a: '#fca5a5', tag: 'e& مصر · ٣٣٣', t1: 'اتصالات من e&', t2: 'شبكة الجيل الجديد في كل أسيوط', badge: 'e&' },
   ];
   const ad = ads[i % ads.length];
-  return canvasTex(512, 256, g => {
-    const gr = g.createLinearGradient(0, 0, 512, 256);
+  return canvasTex(768, 384, g => {
+    const gr = g.createLinearGradient(0, 0, 768, 384);
     gr.addColorStop(0, ad.bg);
-    gr.addColorStop(1, '#0a0f18');
-    g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
-    g.strokeStyle = ad.a; g.lineWidth = 8; g.strokeRect(4, 4, 504, 248);
-    g.globalAlpha = .2; g.fillStyle = ad.a;
-    g.beginPath(); g.arc(420, 128, 150, 0, 7); g.fill();
+    gr.addColorStop(1, ad.bg2);
+    g.fillStyle = gr; g.fillRect(0, 0, 768, 384);
+    g.strokeStyle = ad.a; g.lineWidth = 10; g.strokeRect(6, 6, 756, 372);
+    g.globalAlpha = .14; g.fillStyle = ad.a;
+    g.beginPath(); g.arc(140, 192, 175, 0, 7); g.fill();
     g.globalAlpha = 1;
-    g.fillStyle = ad.a; g.font = '900 64px Cairo, Tahoma, Arial';
-    g.textAlign = 'right'; g.textBaseline = 'middle';
-    g.fillText(ad.t1, 480, 96);
-    g.fillStyle = '#ffffff'; g.font = '700 32px Cairo, Tahoma, Arial';
-    g.fillText(ad.t2, 480, 158);
-    g.font = '110px Arial'; g.textAlign = 'center';
-    g.fillText(ad.ic, 96, 136);
+    // شارة شعار البنك/الشركة
+    g.fillStyle = ad.a;
+    g.beginPath(); g.roundRect ? g.roundRect(42, 108, 168, 168, 28) : g.rect(42, 108, 168, 168); g.fill();
+    g.fillStyle = ad.bg2; g.font = '900 54px Orbitron, Cairo, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(ad.badge, 126, 194);
+    // الشريط العلوي
+    g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(240, 44, 486, 46);
+    g.fillStyle = ad.a; g.font = '700 24px Cairo, Tahoma, Arial'; g.textAlign = 'right';
+    g.fillText(ad.tag, 708, 68);
+    // العنوان الرئيسي والشعار الحقيقي
+    g.fillStyle = '#ffffff'; g.font = '900 56px Cairo, Tahoma, Arial';
+    g.fillText(ad.t1, 718, 168);
+    g.fillStyle = ad.a; g.font = '700 32px Cairo, Tahoma, Arial';
+    g.fillText(ad.t2, 718, 248);
+    g.fillStyle = 'rgba(255,255,255,0.72)'; g.font = '600 20px Cairo, Tahoma, Arial';
+    g.fillText('مرخّص من البنك المركزي المصري · شوارع أسيوط', 718, 326);
   });
 }
-const BILLBOARD_TEXES = [0, 1, 2, 3, 4].map(billboardTex);
+const BILLBOARD_TEXES = [0, 1, 2, 3, 4, 5, 6].map(billboardTex);
 
 /* ========================= 21-materials.js ========================= */
 /* Procedural HDRI reflection studio: realistic Egyptian sun radiance, atmospheric sky dome & ground bounce for automotive paint & glass reflections. */

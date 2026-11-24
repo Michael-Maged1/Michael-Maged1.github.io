@@ -165,7 +165,8 @@ function skyPalette(hour, o) {
 const sunDir = new THREE.Vector3(), moonDir = new THREE.Vector3();
 
 function updateDayNight(dt) {
-  const timeRate = (typeof navigator !== 'undefined' && navigator?.userAgent === 'test') ? 2.4 : (G.timeRate ?? 0.8);
+  // 10 دقائق حقيقية تقريباً لكل فترة (فجر/شروق، نهار، غروب، ليل) = 40 دقيقة للدورة الكاملة
+  const timeRate = (typeof navigator !== 'undefined' && navigator?.userAgent === 'test') ? 2.4 : (G.timeRate ?? 0.6);
   if (G.cycle && G.state==='play') G.clock = (G.clock + dt * timeRate) % 1440;
   const hour = G.clock / 60;
   skyPalette(hour, DN);
@@ -2723,9 +2724,42 @@ function realBuilding(x,z,w,d,h,style,footprint=null,near=null){
   tTrunks.castShadow=true;tTrunks.receiveShadow=true;tCrowns.castShadow=true;tCrowns.receiveShadow=true;REAL_CITY.group.add(tTrunks,tCrowns,tBases);
  }
  // Lighting and street signs are attached to actual road edges.
- for(let i=0;i<ASSYUT.roads.length;i++){const r=ASSYUT.roads[i];if(r.width<9)continue;let next=0;for(const si of r.segments){const s=ASSYUT.segments[si];for(let d=next;d<s.length;d+=48){const side=i%2?1:-1,nx=-(s.b.z-s.a.z)/s.length,nz=(s.b.x-s.a.x)/s.length,x=lerp(s.a.x,s.b.x,d/s.length)+nx*side*(r.width/2+1.4),z=lerp(s.a.z,s.b.z,d/s.length)+nz*side*(r.width/2+1.4),p=nearestAssyutRoad({x,z});if(p.distance<p.width/2+.3)continue;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.065,.10,6,6),new THREE.MeshStandardMaterial({color:0x33433c}));pole.position.set(x,3,z);REAL_CITY.group.add(pole);const lamp=new THREE.Mesh(new THREE.BoxGeometry(.5,.14,.28),new THREE.MeshStandardMaterial({color:0xffedd0,emissive:0xffe5a1,emissiveIntensity:.7}));lamp.position.set(x,6,z);REAL_CITY.group.add(lamp);ROAD_FURNITURE.push({x,z,kind:'streetlight'});}next=(next-s.length)%48;if(next<0)next+=48;}}
+ // أعمدة إنارة تضيء تلقائياً عند الغروب والليل مع بقع ضوئية على الأسفلت وهالات توهج
+ const assyutLampPts=[];
+ const lampPoleMat=new THREE.MeshStandardMaterial({color:0x33433c,roughness:.6,metalness:.35});
+ const lampBulbMat=new THREE.MeshStandardMaterial({color:0xffedd0,emissive:0xffcc70,emissiveIntensity:.08});
+ lampBulbMat.userData={base:1.15};
+ if(typeof nightMats!=='undefined')nightMats.push(lampBulbMat);
+ for(let i=0;i<ASSYUT.roads.length;i++){const r=ASSYUT.roads[i];if(r.width<9)continue;let next=0;for(const si of r.segments){const s=ASSYUT.segments[si];for(let d=next;d<s.length;d+=48){const side=i%2?1:-1,nx=-(s.b.z-s.a.z)/s.length,nz=(s.b.x-s.a.x)/s.length,x=lerp(s.a.x,s.b.x,d/s.length)+nx*side*(r.width/2+1.4),z=lerp(s.a.z,s.b.z,d/s.length)+nz*side*(r.width/2+1.4),p=nearestAssyutRoad({x,z});if(p.distance<p.width/2+.3)continue;const pole=new THREE.Mesh(new THREE.CylinderGeometry(.065,.10,6,6),lampPoleMat);pole.position.set(x,3,z);REAL_CITY.group.add(pole);const lamp=new THREE.Mesh(new THREE.BoxGeometry(.52,.15,.30),lampBulbMat);lamp.position.set(x,6,z);REAL_CITY.group.add(lamp);ROAD_FURNITURE.push({x,z,kind:'streetlight'});assyutLampPts.push({x,z,nx:nx*-side,nz:nz*-side});}next=(next-s.length)%48;if(next<0)next+=48;}}
+ if(assyutLampPts.length){
+  const poolMat=new THREE.MeshBasicMaterial({color:0xffb866,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+  const pools=new THREE.InstancedMesh(new THREE.CircleGeometry(1,14),poolMat,assyutLampPts.length);
+  const glowCoords=[];const dm=new THREE.Object3D();
+  assyutLampPts.forEach((lp,idx)=>{
+   dm.position.set(lp.x+lp.nx*2.1,.05,lp.z+lp.nz*2.1);dm.rotation.set(-Math.PI/2,0,0);dm.scale.set(5.2,5.2,1);dm.updateMatrix();pools.setMatrixAt(idx,dm.matrix);
+   glowCoords.push(lp.x,5.95,lp.z);
+  });
+  pools.instanceMatrix.needsUpdate=true;pools.frustumCulled=false;REAL_CITY.group.add(pools);
+  const gGeo=new THREE.BufferGeometry();gGeo.setAttribute('position',new THREE.Float32BufferAttribute(glowCoords,3));
+  const gMat=new THREE.PointsMaterial({map:GLOW_TEX,color:0xffcf88,size:10,sizeAttenuation:true,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending});
+  const gPts=new THREE.Points(gGeo,gMat);gPts.frustumCulled=false;REAL_CITY.group.add(gPts);
+  if(typeof nightGlows!=='undefined'){nightGlows.push({mat:poolMat,day:0,night:.34});nightGlows.push({mat:gMat,day:0,night:.92});}
+ }
  for(const p of ASSYUT.places.filter((_,i)=>i%2===0))addMountedRoadSign(p.name,p,null,'محافظة أسيوط · '+p.name);
- for(let i=0;i<ASSYUT.places.length;i+=7){const p=ASSYUT.places[i],n=nearestAssyutRoad(p),x=n.point.x+n.nx*(n.width/2+(i%2?1.5:4.2)),z=n.point.z+n.nz*(n.width/2+(i%2?1.5:4.2));if(nearestAssyutRoad({x,z}).distance<n.width/2)continue;const ad=new THREE.Mesh(new THREE.BoxGeometry(i%2?2:7,i%2?2.4:3,.12),new THREE.MeshStandardMaterial({map:cityPick(BILLBOARD_TEXES),roughness:.75}));ad.position.set(x,i%2?2:5,z);ad.rotation.y=n.heading+Math.PI/2;REAL_CITY.group.add(ad);const steel=new THREE.MeshStandardMaterial({color:0x5b666d,roughness:.55,metalness:.5}),height=ad.position.y;for(const offset of i%2?[0]:[-2.3,2.3]){const v=new THREE.Vector3(offset,0,-.08).applyAxisAngle(new THREE.Vector3(0,1,0),ad.rotation.y),support=new THREE.Mesh(new THREE.CylinderGeometry(.07,.10,height,8),steel);support.position.set(x+v.x,height/2,z+v.z);REAL_CITY.group.add(support);ROAD_FURNITURE.push({x:x+v.x,z:z+v.z,kind:'advert'});}}
+ // لوحات إعلانات كبيرة وصغيرة مضاءة ليلاً لبراندات وبنوك مصرية حقيقية
+ const steelMat=new THREE.MeshStandardMaterial({color:0x5b666d,roughness:.55,metalness:.5});
+ for(let i=0;i<ASSYUT.places.length;i+=3){
+  const p=ASSYUT.places[i],n=nearestAssyutRoad(p),isSmall=i%2===1;
+  const x=n.point.x+n.nx*(n.width/2+(isSmall?1.6:4.2)),z=n.point.z+n.nz*(n.width/2+(isSmall?1.6:4.2));
+  if(nearestAssyutRoad({x,z}).distance<n.width/2)continue;
+  const tex=cityPick(BILLBOARD_TEXES);
+  const adMat=new THREE.MeshStandardMaterial({map:tex,emissiveMap:tex,emissive:0xffffff,emissiveIntensity:.2,roughness:.65});
+  adMat.userData={base:.45};if(typeof nightMats!=='undefined')nightMats.push(adMat);
+  const ad=new THREE.Mesh(new THREE.BoxGeometry(isSmall?2.2:8.2,isSmall?2.7:3.8,.16),adMat);
+  ad.position.set(x,isSmall?1.9:5.2,z);ad.rotation.y=n.heading+Math.PI/2;REAL_CITY.group.add(ad);
+  const height=ad.position.y;
+  for(const offset of isSmall?[0]:[-2.6,2.6]){const v=new THREE.Vector3(offset,0,-.08).applyAxisAngle(new THREE.Vector3(0,1,0),ad.rotation.y),support=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,height,8),steelMat);support.position.set(x+v.x,height/2,z+v.z);REAL_CITY.group.add(support);ROAD_FURNITURE.push({x:x+v.x,z:z+v.z,kind:'advert'});}
+ }
 }
 
 /* ========================= 47-assyut-urban-details.js ========================= */

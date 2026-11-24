@@ -164,6 +164,15 @@ function updateAssyutTraffic(dt){
     if(next){t.s-=f.length;t.edge=next;}
     else t.s=0;
    }
+   const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test');
+   if(!isTest&&typeof G!=='undefined'&&G.state==='play'&&!t.policeSuspect&&Math.hypot(tx-car.x,tz-car.z)>245){
+    const minW=t.kind==='bus'?10:6;
+    const pool=ASSYUT.edges.filter(e=>{if(ASSYUT.roads[e.road].width<minW||e.length<22)return false;const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);return d>65&&d<185;});
+    if(pool.length){
+     const ne=pick(pool),nf2=edgeFrame(ne),rw=ASSYUT.roads[ne.road].width,ns=rand(4,Math.max(5,nf2.length-4)),noff=Math.min(rw*.26,1.8),nx2=nf2.a.x+nf2.fx*ns-nf2.fz*noff,nz2=nf2.a.z+nf2.fz*ns+nf2.fx*noff,nh2=Math.atan2(-nf2.fz,nf2.fx),ny2=infrastructureEdgeHeight(ne,ns);
+     if(trafficFootprintClear(nx2,nz2,nh2,t.hl,t.hw,ny2)){t.edge=ne;t.s=ns;t.offset=noff;t.laneTarget=noff;t.nextEdge=null;t.curve=null;t.stopAt=null;t.mesh.position.set(nx2,ny2,nz2);t.mesh.rotation.y=nh2;continue;}
+    }
+   }
    const nf=edgeFrame(t.edge);
    t.mesh.position.set(nf.a.x+nf.fx*t.s-nf.fz*t.offset,infrastructureEdgeHeight(t.edge,t.s),nf.a.z+nf.fz*t.s+nf.fx*t.offset);
    t.mesh.rotation.y=Math.atan2(-nf.fz,nf.fx);
@@ -334,7 +343,10 @@ function updateAssyutTraffic(dt){
 
      syncCarSpeed();
      recordImpact(-closing,'خبطة! حافظ على مسافة الأمان');
-     if(typeof spawnVehicleSparks==='function')spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,7);
+     car.shake=Math.max(car.shake||0,clamp(-closing*0.14,0.35,1.35));
+     car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+clamp(-closing*0.16,0.25,1.4),-1.8,1.8);
+     if(-closing>3.5&&typeof flashScreen==='function')flashScreen();
+     if(typeof spawnVehicleSparks==='function')spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,14);
      if(typeof sfxCrash==='function')sfxCrash();
     }
     t.speed=Math.max(0,Math.min(t.speed,car.speed*0.5));

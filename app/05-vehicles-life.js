@@ -1387,8 +1387,20 @@ function crossingSafe(g){
  return !(Math.abs(across)<width/2+2&&toward&&Math.abs(car.speed)>.8&&Math.abs(along)<Math.max(10,Math.abs(car.speed)*4));
 }
 function updateAssyutPeds(dt){
+ const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test');
  for(const g of WALKING_GROUPS){
   let f=pedestrianFrame(g.edge),moving=g.state!=='wait';
+  if(!isTest&&typeof G!=='undefined'&&G.state==='play'&&g.members.length){
+   const m0=g.members[0].mesh.position;
+   if(Math.hypot(m0.x-car.x,m0.z-car.z)>115){
+    const pool=pedestrianEdges().filter(e=>{const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);return d>35&&d<92;});
+    if(pool.length){
+     g.edge=pick(pool);f=pedestrianFrame(g.edge);g.s=rand(2,Math.max(3,f.len-2));g.state='walk';
+     const nb=groupPosition(g);
+     for(const pm of g.members){pm.knockTimer=0;pm.mesh.rotation.x=0;pm.mesh.position.x=nb.x;pm.mesh.position.z=nb.z;}
+    }
+   }
+  }
   if(g.state==='walk'){
    g.s+=g.speed*dt;g.crossIn-=dt;
    if(g.s>f.len-1){
@@ -1436,7 +1448,26 @@ function updateAssyutPeds(dt){
     if(rotDiff<-Math.PI)rotDiff+=Math.PI*2;
     p.mesh.rotation.y+=rotDiff*(1-Math.exp(-dt*9.5));
    }
+   if(p.knockTimer>0){
+    p.knockTimer-=dt;
+    p.mesh.position.x+=(p.knockVelX||0)*dt;p.mesh.position.z+=(p.knockVelZ||0)*dt;
+    p.knockVelX*=Math.exp(-dt*4.5);p.knockVelZ*=Math.exp(-dt*4.5);
+    p.mesh.rotation.x=p.knockTimer>0.5?1.38:lerp(p.mesh.rotation.x,0,1-Math.exp(-dt*6));
+    const rh=assyutRoadHeightAt(p.mesh.position.x,p.mesh.position.z);
+    p.mesh.position.y=((rh>0&&rh<0.4)?rh:0)+(p.knockTimer>0.5?0.22:0.18);
+    continue;
+   }
    const near=Math.hypot(p.mesh.position.x-car.x,p.mesh.position.z-car.z);
+   if(near<2.15&&Math.abs(car.speed)>2.2){
+    const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));
+    const push=clamp(Math.abs(car.speed)*0.65,3.5,11);
+    p.knockTimer=2.5;p.knockVelX=(awayX/n)*push;p.knockVelZ=(awayZ/n)*push;
+    p.mesh.position.x+=(awayX/n)*0.8;p.mesh.position.z+=(awayZ/n)*0.8;
+    car.shake=Math.max(car.shake||0,0.45);
+    car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+0.35,-1.8,1.8);
+    if(car.hitCd<=0){car.hitCd=.8;if(typeof sfxBump==='function')sfxBump();else sfxThud();if(typeof flashScreen==='function')flashScreen();if(typeof floatText==='function')floatText('⚠️ صدمت أحد المشاة — انتبه!','#ff685d');setObjective('انتبه للمشاة · خفّف السرعة',2000);}
+    continue;
+   }
    if(near<2.5&&Math.abs(car.speed)>1){const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
    const walkBob=moving?Math.abs(Math.sin(p.phase*2))*.026:0;
    p.mesh.rotation.x=moving?.038:0;
@@ -1920,6 +1951,15 @@ function updateAssyutTraffic(dt){
     if(next){t.s-=f.length;t.edge=next;}
     else t.s=0;
    }
+   const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test');
+   if(!isTest&&typeof G!=='undefined'&&G.state==='play'&&!t.policeSuspect&&Math.hypot(tx-car.x,tz-car.z)>245){
+    const minW=t.kind==='bus'?10:6;
+    const pool=ASSYUT.edges.filter(e=>{if(ASSYUT.roads[e.road].width<minW||e.length<22)return false;const a=ASSYUT.nodes[e.a],d=Math.hypot(a.x-car.x,a.z-car.z);return d>65&&d<185;});
+    if(pool.length){
+     const ne=pick(pool),nf2=edgeFrame(ne),rw=ASSYUT.roads[ne.road].width,ns=rand(4,Math.max(5,nf2.length-4)),noff=Math.min(rw*.26,1.8),nx2=nf2.a.x+nf2.fx*ns-nf2.fz*noff,nz2=nf2.a.z+nf2.fz*ns+nf2.fx*noff,nh2=Math.atan2(-nf2.fz,nf2.fx),ny2=infrastructureEdgeHeight(ne,ns);
+     if(trafficFootprintClear(nx2,nz2,nh2,t.hl,t.hw,ny2)){t.edge=ne;t.s=ns;t.offset=noff;t.laneTarget=noff;t.nextEdge=null;t.curve=null;t.stopAt=null;t.mesh.position.set(nx2,ny2,nz2);t.mesh.rotation.y=nh2;continue;}
+    }
+   }
    const nf=edgeFrame(t.edge);
    t.mesh.position.set(nf.a.x+nf.fx*t.s-nf.fz*t.offset,infrastructureEdgeHeight(t.edge,t.s),nf.a.z+nf.fz*t.s+nf.fx*t.offset);
    t.mesh.rotation.y=Math.atan2(-nf.fz,nf.fx);
@@ -2090,7 +2130,10 @@ function updateAssyutTraffic(dt){
 
      syncCarSpeed();
      recordImpact(-closing,'خبطة! حافظ على مسافة الأمان');
-     if(typeof spawnVehicleSparks==='function')spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,7);
+     car.shake=Math.max(car.shake||0,clamp(-closing*0.14,0.35,1.35));
+     car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+clamp(-closing*0.16,0.25,1.4),-1.8,1.8);
+     if(-closing>3.5&&typeof flashScreen==='function')flashScreen();
+     if(typeof spawnVehicleSparks==='function')spawnVehicleSparks(contactX,(car.y+t.mesh.position.y)/2+0.35,contactZ,closingX,closingZ,14);
      if(typeof sfxCrash==='function')sfxCrash();
     }
     t.speed=Math.max(0,Math.min(t.speed,car.speed*0.5));

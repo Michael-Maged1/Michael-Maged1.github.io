@@ -3696,8 +3696,11 @@ function updateTraffic(dt) {
 
           syncCarSpeed();
           recordImpact(-closing, 'خبطة! حافظ على مسافة الأمان');
+          car.shake = Math.max(car.shake || 0, clamp(-closing * 0.14, 0.35, 1.35));
+          car.suspensionJoltVel = clamp((car.suspensionJoltVel || 0) + clamp(-closing * 0.16, 0.25, 1.4), -1.8, 1.8);
+          if (-closing > 3.5 && typeof flashScreen === 'function') flashScreen();
           if (typeof spawnVehicleSparks === 'function') {
-            spawnVehicleSparks(contactX, (car.y + ty) / 2 + 0.35, contactZ, closingX, closingZ, 8);
+            spawnVehicleSparks(contactX, (car.y + ty) / 2 + 0.35, contactZ, closingX, closingZ, 14);
           }
           if (typeof sfxCrash === 'function') sfxCrash();
         }
