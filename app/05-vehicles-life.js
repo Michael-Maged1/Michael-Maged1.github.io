@@ -1501,29 +1501,35 @@ function updateAssyutPeds(dt){
     p.mesh.position.y=groundH+p.knockH+(down?0.16:0.18);
     continue;
    }
-   const near=Math.hypot(p.mesh.position.x-car.x,p.mesh.position.z-car.z);
-   const sameLevel=Math.abs((p.mesh.position.y||0)-car.y)<2.0;
-   if(sameLevel&&near<2.15&&Math.abs(car.speed)>2.2){
-    const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));
-    const spd=Math.abs(car.speed);
-    const carDirX=spd>0.5?car.vel.x/spd:awayX/n,carDirZ=spd>0.5?car.vel.y/spd:awayZ/n;
-    const push=clamp(spd*0.85,3.8,12.5);
-    p.knockTimer=2.8;
-    p.knockVelX=(carDirX*0.72+(awayX/n)*0.28)*push;
-    p.knockVelZ=(carDirZ*0.72+(awayZ/n)*0.28)*push;
-    p.knockVelY=clamp(spd*0.16,0.9,2.8);
-    p.knockH=0.04;
-    p.knockPitchDir=Math.random()>0.35?1.46:-1.40;
-    p.knockRoll=(Math.random()>.5?1:-1)*0.32;
-    p.knockSpin=(Math.random()-0.5)*3.4;
-    p.mesh.position.x+=carDirX*0.65+(awayX/n)*0.35;p.mesh.position.z+=carDirZ*0.65+(awayZ/n)*0.35;
-    car.vel.x*=0.98;car.vel.y*=0.98;if(typeof syncCarSpeed==='function')syncCarSpeed();
-    car.shake=Math.max(car.shake||0,clamp(spd*0.035,0.28,0.65));
-    car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+0.35,-1.8,1.8);
-    if(car.hitCd<=0){car.hitCd=.8;if(typeof rideBusy==='function'&&rideBusy())M.hits=(M.hits||0)+1;if(typeof sfxThud==='function')sfxThud();if(typeof flashScreen==='function')flashScreen();if(typeof floatText==='function')floatText('⚠️ صدمت أحد المشاة — انتبه!','#ff685d');setObjective('انتبه للمشاة · خفّف السرعة',2000);}
-    continue;
+   const dxCar=p.mesh.position.x-car.x,dzCar=p.mesh.position.z-car.z;
+   const near=Math.hypot(dxCar,dzCar);
+   if(near<3.2&&Math.abs((p.mesh.position.y||0)-car.y)<2.0){
+    const fx=Math.cos(car.heading),fz=-Math.sin(car.heading);
+    const lx=dxCar*fx+dzCar*fz,lz=-dxCar*fz+dzCar*fx;
+    const pb=typeof playerBounds==='function'?playerBounds():{hl:2.15,hw:0.91};
+    const pedTouch=Math.abs(lx)<pb.hl+0.25&&Math.abs(lz)<pb.hw+0.20;
+    if(pedTouch&&Math.abs(car.speed)>2.2){
+     const awayX=dxCar,awayZ=dzCar,n=Math.max(.01,near);
+     const spd=Math.abs(car.speed);
+     const carDirX=spd>0.5?car.vel.x/spd:awayX/n,carDirZ=spd>0.5?car.vel.y/spd:awayZ/n;
+     const push=clamp(spd*0.85,3.8,12.5);
+     p.knockTimer=2.8;
+     p.knockVelX=(carDirX*0.72+(awayX/n)*0.28)*push;
+     p.knockVelZ=(carDirZ*0.72+(awayZ/n)*0.28)*push;
+     p.knockVelY=clamp(spd*0.16,0.9,2.8);
+     p.knockH=0.04;
+     p.knockPitchDir=Math.random()>0.35?1.46:-1.40;
+     p.knockRoll=(Math.random()>.5?1:-1)*0.32;
+     p.knockSpin=(Math.random()-0.5)*3.4;
+     p.mesh.position.x+=carDirX*0.35+(awayX/n)*0.25;p.mesh.position.z+=carDirZ*0.35+(awayZ/n)*0.25;
+     car.vel.x*=0.98;car.vel.y*=0.98;if(typeof syncCarSpeed==='function')syncCarSpeed();
+     car.shake=Math.max(car.shake||0,clamp(spd*0.035,0.28,0.65));
+     car.suspensionJoltVel=clamp((car.suspensionJoltVel||0)+0.35,-1.8,1.8);
+     if(car.hitCd<=0){car.hitCd=.8;if(typeof rideBusy==='function'&&rideBusy())M.hits=(M.hits||0)+1;if(typeof sfxThud==='function')sfxThud();if(typeof flashScreen==='function')flashScreen();if(typeof floatText==='function')floatText('⚠️ صدمت أحد المشاة — انتبه!','#ff685d');setObjective('انتبه للمشاة · خفّف السرعة',2000);}
+     continue;
+    }
+    if(Math.abs(lx)<pb.hl+0.36&&Math.abs(lz)<pb.hw+0.32&&Math.abs(car.speed)>1){const awayX=dxCar,awayZ=dzCar,n=Math.max(.01,near);p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
    }
-   if(sameLevel&&near<2.5&&Math.abs(car.speed)>1){const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
    const walkBob=moving?Math.abs(Math.sin(p.phase*2))*.018:0;
    p.mesh.rotation.x=moving?.022:0;
    p.mesh.rotation.z=moving?Math.sin(p.phase)*.014:0;
