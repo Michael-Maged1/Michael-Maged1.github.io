@@ -4078,6 +4078,10 @@ function updateCamera(dt) {
     desired = base.clone().addScaledVector(cfwd, -9.6).add(new THREE.Vector3(0, 3.6, 0));
     look = base.clone().addScaledVector(fwd, 11).add(new THREE.Vector3(0, 1.35, 0));
     fov = 62;
+  }
+  if ((G.camMode === 0 || G.camMode === 1) && desired && carY < -0.45) {
+    // إبقاء الكاميرا داخل النفق وعدم ارتفاعها فوق السقف
+    desired = base.clone().addScaledVector(cfwd, -4.4).add(new THREE.Vector3(0, 1.75, 0));
   } else if (G.camMode === 2) {
     // من داخل السيارة عند التابلوه
     if (typeof taxi !== 'undefined') taxi.updateMatrixWorld(true);

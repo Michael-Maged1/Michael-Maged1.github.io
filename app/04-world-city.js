@@ -3001,7 +3001,6 @@ function infrastructureRoadPoint(road,d){const r=ASSYUT.roads[road];for(const si
   for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],na=norms[i],nb=norms[i+1],len=Math.hypot(b.x-a.x,b.z-a.z),heading=-Math.atan2(b.z-a.z,b.x-a.x),slope=Math.atan2(b.h-a.h,len);quad(a,b,w,.03,mat,0,na,nb);
    for(const side of[-1,1]){const cx=(a.x+b.x)/2+((na.x+nb.x)/2)*side*(w/2+.15),cz=(a.z+b.z)/2+((na.z+nb.z)/2)*side*(w/2+.15),height=p.kind==='tunnel'?3.3:.70;
     const wall=new THREE.Mesh(new THREE.BoxGeometry(len+.16,height,.30),p.kind==='tunnel'?inside:barrierMat);wall.position.set(cx,(a.h+b.h)/2+height/2,cz);wall.rotation.y=heading;wall.rotation.z=slope;wall.castShadow=true;wall.receiveShadow=true;group.add(wall);INFRA.barriers.push({x:cx,z:cz,heading,hl:len/2,hw:.18,h:(a.h+b.h)/2,height,kind:p.kind,road:ri});
-    if(p.kind==='tunnel'){const ga={...a,h:0},gb={...b,h:0};quad(ga,gb,12,-.018,vergeMat,side*(w/2+6.35),na,nb);}
    }
    if(p.kind==='tunnel'&&a.h<-1.4&&b.h<-1.4){quad(a,b,w+1,3.3,inside,0,na,nb);if(i%3===0){const lamp=new THREE.Mesh(new THREE.BoxGeometry(.8,.04,.3),new THREE.MeshBasicMaterial({color:0xffe7b3,toneMapped:false}));lamp.position.set((a.x+b.x)/2,(a.h+b.h)/2+3.22,(a.z+b.z)/2);group.add(lamp);}}
    if(p.kind==='bridge'){const bw=w+.56,yT=-.02,yB=-.48;
