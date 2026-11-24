@@ -53,6 +53,7 @@ function buildSolidGrid() {
 }
 
 function resolveBuildings() {
+  if(car.y<-0.6)return;
   if(!SOLID.built)buildSolidGrid();
   const ci=Math.floor(car.x/SOLID.cell),cj=Math.floor(car.z/SOLID.cell),seen=new Set();
   for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++) {
@@ -179,6 +180,7 @@ function roadHeightAt(x,z){
  return h;
 }
 function resolveTrees() {
+  if(car.y<-0.6)return;
   const bounds=playerBounds(),fx=Math.cos(car.heading),fz=-Math.sin(car.heading),rx=-fz,rz=fx;
   for(const t of TREES){
     const dx=t.x-car.x,dz=t.z-car.z;if(dx*dx+dz*dz>16)continue;

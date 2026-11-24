@@ -3052,9 +3052,11 @@ function driveSurfaceCandidates(x,z){
  return result;
 }
 function selectDrivingSurface(){
- const candidates=driveSurfaceCandidates(car.x,car.z),locked=candidates.filter(p=>p.road===car.surfaceRoad&&INFRA.profiles.has(p.road)&&p.distance<p.s.width/2+.65&&p.raw>=-.02&&p.raw<=1.02).sort((a,b)=>a.distance-b.distance)[0];
- if(locked&&Math.abs(locked.height-car.y)<1.1)return;
- let best=null;for(const p of candidates){if(p.height-car.y>.75)continue;const ramp=INFRA.profiles.has(p.road)&&Math.abs(p.height)<.65&&p.alignment>.85&&p.raw>=0&&p.raw<=1;const score=p.distance*.45+Math.abs(p.height-car.y)*2+(1-p.alignment)*1.8-(ramp?2.5:0);if(!best||score<best.score)best={...p,score};}car.surfaceRoad=best?.road;
+ const candidates=driveSurfaceCandidates(car.x,car.z);
+ const curKind=INFRA.profiles.get(car.surfaceRoad)?.kind;
+ const locked=candidates.filter(p=>p.road===car.surfaceRoad&&INFRA.profiles.has(p.road)&&p.distance<p.s.width/2+(curKind==='tunnel'&&car.y<-0.2?2.2:.65)&&p.raw>=-.08&&p.raw<=1.08).sort((a,b)=>a.distance-b.distance)[0];
+ if(locked&&Math.abs(locked.height-car.y)<1.4)return;
+ let best=null;for(const p of candidates){if(p.height-car.y>.75)continue;if(car.y<-0.35&&p.height>-0.15)continue;const ramp=INFRA.profiles.has(p.road)&&Math.abs(p.height)<.65&&p.alignment>.85&&p.raw>=0&&p.raw<=1;const score=p.distance*.45+Math.abs(p.height-car.y)*2+(1-p.alignment)*1.8-(ramp?2.5:0);if(!best||score<best.score)best={...p,score};}car.surfaceRoad=best?.road;
 }
 function sampledDriveHeight(x,z,currentY,preferredRoad){
  for(const p of STATION_SURFACES){const dx=x-p.x,dz=z-p.z,lx=dx*Math.cos(p.yaw)-dz*Math.sin(p.yaw),lz=dx*Math.sin(p.yaw)+dz*Math.cos(p.yaw)+2.7;if(Math.abs(lx)<11.5&&Math.abs(lz)<9.5)return .18;}
@@ -3068,9 +3070,9 @@ function resolveInfrastructureRails(){
   const bh=b.height??.70;
   // حاجز الكوبري لا ينتمي إلا لسطح الطريق الذي بُني عليه؛ هذا يمنع
   // اصطدام السيارة بحاجز قريب وهي تسير فوق كوبري آخر.
-  const sameDeck=b.kind!=='bridge'||car.surfaceRoad===b.road||driveSurfaceCandidates(car.x,car.z).some(p=>p.road===b.road&&p.distance<p.s.width/2+1.25);
+  const sameDeck=car.surfaceRoad===b.road||driveSurfaceCandidates(car.x,car.z).some(p=>p.road===b.road&&p.distance<p.s.width/2+1.25);
   const lowRampSolid = b.kind === 'bridge' && b.h < 3.8 && car.y < b.h + bh;
-  const solid=b.kind==='tunnel'?(car.y+1.5>=b.h&&car.y<=b.h+bh+.3):((sameDeck&&Math.abs(car.y-b.h)<1.35)||lowRampSolid);
+  const solid=b.kind==='tunnel'?(car.y<-0.25&&sameDeck&&car.y+1.5>=b.h&&car.y<=b.h+bh+.3):((sameDeck&&Math.abs(car.y-b.h)<1.35)||lowRampSolid);
   if(!solid)continue;
   const hit=obbContact(playerBounds(),b);if(hit)recordImpact(staticContact(hit),'حاجز الطريق · خفّف السرعة');
  }
@@ -3079,7 +3081,7 @@ function resolveInfrastructureRails(){
  for(const f of [...(INFRA.supports||[]),...(ROAD_FURNITURE||[])]){
   if(f.kind!=='bridge-support'||Math.abs(car.x-f.x)>5||Math.abs(car.z-f.z)>5)continue;
   const top=Number.isFinite(f.top)?f.top:2.25;
-  if(car.y>top+.18)continue;
+  if(car.y>top+.18||car.y<-0.4)continue;
   const hit=obbContact(playerBounds(),{x:f.x,z:f.z,heading:0,hl:.38,hw:.38});
   if(hit)recordImpact(staticContact(hit),'دعامة الكوبري · خفّف السرعة');
  }
