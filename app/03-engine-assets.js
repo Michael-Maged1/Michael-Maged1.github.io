@@ -737,7 +737,8 @@ function populateVehicleOccupants(holder, key) {
   const occupantsGroup = new THREE.Group();
   occupantsGroup.name = 'OccupantsGroup';
 
-  const isMicro = (key === 'micro' || key === 'traffic_hiace' || key === 'traffic_sprinter');
+  const isSprinter = (key === 'traffic_sprinter');
+  const isMicro = (key === 'micro' || key === 'traffic_hiace');
   const isTuktuk = (key === 'traffic_tuktuk' || key === 'tuktuk');
   const isBus = (key === 'traffic_bus3d' || key === 'bus');
   const isPickup = (key === 'traffic_hilux' || /pickup|truck/i.test(key));
@@ -761,6 +762,19 @@ function populateVehicleOccupants(holder, key) {
         p2.scale.setScalar(0.86);
         occupantsGroup.add(p2);
       }
+    }
+  } else if (isSprinter) {
+    const driver = makeSeatedOccupant({ isDriver: true });
+    driver.position.set(1.28, 0.78, -0.52);
+    driver.scale.setScalar(0.95);
+    occupantsGroup.add(driver);
+    holder.userData.driverOccupant = driver;
+
+    if (Math.random() < 0.65) {
+      const frontP = makeSeatedOccupant({ isDriver: false });
+      frontP.position.set(1.28, 0.78, 0.52);
+      frontP.scale.setScalar(0.93);
+      occupantsGroup.add(frontP);
     }
   } else if (isMicro) {
     const driver = makeSeatedOccupant({ isDriver: true });
@@ -835,7 +849,7 @@ function populateVehicleOccupants(holder, key) {
   holder.userData.occupants = occupantsGroup;
 }
 function vehicleVisual(key, color, taxiPaint=false) {
- if(UPLOADED_MODELS[key.replace(/_traffic$/,'')]){const h=uploadedCarVisual(key,color);if(h){const c=CARS.find(x=>x.asset===key.replace(/_traffic$/,''));extractTrafficWheels(h,['Wheel_FL','Wheel_FR','Wheel_RL','Wheel_RR'],c?.id==='micra'?.29:c?.id==='xtrail'?.37:.33);}return h;}
+ if(UPLOADED_MODELS[key.replace(/_traffic$/,'')]){const h=uploadedCarVisual(key,color);if(h){const c=CARS.find(x=>x.asset===key.replace(/_traffic$/,''));extractTrafficWheels(h,['Wheel_FL','Wheel_FR','Wheel_RL','Wheel_RR'],c?.id==='micra'?.29:c?.id==='xtrail'?.37:.33);populateVehicleOccupants(h,key);}return h;}
  const asset=importedModels.loaded[key];if(!asset)return null;
  const spec=EXTRA_TRAFFIC_SPECS[key];
  const model=(typeof cloneSkeleton==='function'?cloneSkeleton(asset.scene):asset.scene.clone(true)), holder=new THREE.Group();holder.add(model);
@@ -1057,12 +1071,10 @@ function upgradeLoadedModels(key) {
  }
  if(key==='man'||key==='woman') {
   if(isTest){
-   peds.forEach((p,i)=>attachImportedPerson(p.mesh,i%3===0?'woman':'man'));
    attachImportedPerson(passenger,'man');
    if(key==='man')for(const t of traffic){if(!t.mesh.userData.twoWheeler||t.mesh.userData.riderDetail)continue;const rider=personVisual('man');if(!rider)continue;t.mesh.userData.rider.visible=false;poseCycleRider(rider,t.kind==='bicycle');t.mesh.add(rider);t.mesh.userData.riderDetail=rider;}
   }else{
    _enqueueUpgrade(()=>attachImportedPerson(passenger,'man'));
-   peds.forEach((p,i)=>_enqueueUpgrade(()=>attachImportedPerson(p.mesh,i%3===0?'woman':'man')));
    if(key==='man')for(const t of traffic){if(!t.mesh.userData.twoWheeler||t.mesh.userData.riderDetail)continue;_enqueueUpgrade(()=>{if(t.mesh.userData.riderDetail)return;const rider=personVisual('man');if(!rider)return;t.mesh.userData.rider.visible=false;poseCycleRider(rider,t.kind==='bicycle');t.mesh.add(rider);t.mesh.userData.riderDetail=rider;});}
   }
  }

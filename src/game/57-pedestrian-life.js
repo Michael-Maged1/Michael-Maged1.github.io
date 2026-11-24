@@ -24,7 +24,11 @@ function initializePedestrianLife(){
   const g={id:i,edge,s:4+(i*3.7)%Math.max(1,f.len-8),side:i%2===0?1:-1,speed,state:'walk',gutter,crossIn,crossProgress:0,waitTime:0,members:[],family,mode,canCross};
   const count=family?4:couple?2:1;
   for(let j=0;j<count;j++){
-   const child=family&&j>=2,mesh=makePerson(pick(SHIRTS),pick(SKIN));mesh.scale.setScalar(child?.65:1.0);scene.add(mesh);
+   const child=family&&j>=2;
+   const ageGroup=child?'child':(i%6===0?'elder':(j===1||i%3===0)?'woman':'adult');
+   const mesh=makePerson(pick(SHIRTS),pick(SKIN),ageGroup);
+   if(child)mesh.scale.setScalar(.66);
+   scene.add(mesh);
    const fVec={x:f.fx,z:f.fz};
    const spread=(j%2-.5)*.42,behind=Math.floor(j/2)*.65;
    const base=groupPosition(g);
@@ -147,14 +151,14 @@ function updateAssyutPeds(dt){
     continue;
    }
    if(sameLevel&&near<2.5&&Math.abs(car.speed)>1){const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));p.mesh.position.x+=awayX/n*dt*2;p.mesh.position.z+=awayZ/n*dt*2;if(car.hitCd<=0){car.hitCd=.8;sfxThud();setObjective('انتبه للمشاة · خفّف السرعة',1800);}}
-   const walkBob=moving?Math.abs(Math.sin(p.phase*2))*.026:0;
-   p.mesh.rotation.x=moving?.038:0;
-   p.mesh.rotation.z=moving?Math.sin(p.phase)*.022:0;
+   const walkBob=moving?Math.abs(Math.sin(p.phase*2))*.018:0;
+   p.mesh.rotation.x=moving?.022:0;
+   p.mesh.rotation.z=moving?Math.sin(p.phase)*.014:0;
    const elevation=g.state==='cross'?lerp(.18,.028,Math.sin(Math.min(1,Math.max(0,g.crossProgress))*Math.PI)):(g.gutter?.03:.18);
    const rh=assyutRoadHeightAt(p.mesh.position.x,p.mesh.position.z);
    const groundH=(rh>0&&rh<0.4)?rh:0;
    p.mesh.position.y=groundH+elevation+walkBob;
-   p.phase+=moving?dt*g.speed*6:0;
+   p.phase+=moving?dt*g.speed*3.4:0;
    if(near<90)animatePerson(p.mesh,p.phase,moving?1:0);
   }
  }

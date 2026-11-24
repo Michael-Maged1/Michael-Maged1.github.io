@@ -2,13 +2,17 @@
 const SKIN = [0xc58a5e, 0xa86f4a, 0x8a5738, 0xd9a477, 0x6f442c];
 const SHIRTS = [0xd94f3d, 0x3d6bd9, 0x3f8f6b, 0x8f3f7e, 0xc9b45a, 0x2f9fb3, 0xe07b39, 0x6b5bd9];
 
-function makePerson(shirt, skin) {
+function makePerson(shirt, skin, ageGroup = 'adult') {
   const g = new THREE.Group();
+  const isChild = ageGroup === 'child';
+  const isElder = ageGroup === 'elder';
+  const isWoman = ageGroup === 'woman';
   const shirtMat = new THREE.MeshStandardMaterial({color:shirt,roughness:.94});
   const skinMat = new THREE.MeshStandardMaterial({color:skin,roughness:.76});
-  const pantsMat = new THREE.MeshStandardMaterial({color:pick([0x29313c,0x42423a,0x182a40,0x605344]),roughness:.95});
+  const pantsMat = new THREE.MeshStandardMaterial({color:isWoman?pick([0x1c212b,0x2e2a38,0x3a2f2a,0x1d2d3a]):pick([0x29313c,0x42423a,0x182a40,0x605344]),roughness:.95});
   const shoeMat = new THREE.MeshStandardMaterial({color:0x24201d,roughness:.8});
-  const hairMat = new THREE.MeshStandardMaterial({color:pick([0x201711,0x30251c,0x171719,0x4b3e33]),roughness:1});
+  const hairCol = isElder ? pick([0xc8ccd0, 0x9aa0a6, 0xdfe2e5]) : pick([0x201711,0x30251c,0x171719,0x4b3e33]);
+  const hairMat = new THREE.MeshStandardMaterial({color:hairCol,roughness:1});
   const eyesMat = new THREE.MeshStandardMaterial({color:0x201b17,roughness:.6});
   const sphere = new THREE.SphereGeometry(1,16,12);
   function ell(parent,mat,pos,scale) {
@@ -35,7 +39,16 @@ function makePerson(shirt, skin) {
   ell(head,skinMat,[0,-.073,.094],[.028,.005,.006]);
   const hair=new THREE.Mesh(new THREE.SphereGeometry(1,16,12,0,Math.PI*2,0,Math.PI*.53),hairMat);
   hair.scale.set(.109,.151,.11);hair.position.y=.013;head.add(hair);
-  if(Math.random()<.35) ell(head,hairMat,[0,-.07,.047],[.08,.055,.063]);
+  if(isWoman){
+    // طرحة / حجاب بألوان متناسقة
+    const hijabMat=new THREE.MeshStandardMaterial({color:pick([0xebe5dc,0x2c3e50,0x6e3b4b,0x3c5a4c,0x4a423b,0x1a1c22]),roughness:.9});
+    const wrap=new THREE.Mesh(new THREE.SphereGeometry(1,14,10,0,Math.PI*2,0,Math.PI*.64),hijabMat);
+    wrap.scale.set(.118,.158,.12);wrap.position.set(0,.008,-.01);head.add(wrap);
+    const drape=new THREE.Mesh(new THREE.CylinderGeometry(.095,.12,.22,10),hijabMat);
+    drape.position.set(0,-.12,-.035);head.add(drape);
+  }else if(!isChild && (isElder || Math.random()<.35)){
+    ell(head,hairMat,[0,-.07,.047],[.08,.055,.063]);
+  }
   const arms=[],legs=[],knees=[];
   for(const side of [-1,1]) {
     const arm=new THREE.Group();arm.position.set(side*.222,1.35,0);arm.rotation.z=side*.08;g.add(arm);arms.push(arm);
@@ -59,8 +72,9 @@ function makePerson(shirt, skin) {
     const bag=new THREE.Mesh(new THREE.BoxGeometry(.14,.24,.22),new THREE.MeshStandardMaterial({color:0x554132,roughness:.9}));
     bag.position.set(.27,.96,0);bag.castShadow=true;g.add(bag);
   }
-  g.userData.shirtMat=shirtMat;g.userData.walk={arms,legs,knees};
-  const h=rand(.94,1.06);g.scale.set(h,h,h);
+  g.userData.shirtMat=shirtMat;g.userData.walk={arms,legs,knees};g.userData.ageGroup=ageGroup;
+  const h=isChild?rand(.62,.74):isElder?rand(.90,.98):isWoman?rand(.90,.98):rand(.95,1.06);
+  g.scale.set(h,h,h);
   const lod=new THREE.LOD();lod.addLevel(g,0);
   const distant=new THREE.Group();
   const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.19,.57,2,6),shirtMat);torso.position.y=1.12;distant.add(torso);
