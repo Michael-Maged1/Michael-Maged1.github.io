@@ -16,8 +16,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@600;700;800;900&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="app/hud.css?v=1795554639047">
-<link rel="stylesheet" href="app/menu.css?v=1795554639047">
+  <link rel="stylesheet" href="app/hud.css?v=1795554901870">
+<link rel="stylesheet" href="app/menu.css?v=1795554901870">
 </head>
 
 <body>
@@ -133,6 +133,11 @@
           <span class="clusterGear" id="gear">D</span>
         </div>
       </div>
+    </div>
+
+    <div id="adPlayBanner" class="adPlaySlot hidden" aria-label="مساحة إعلانية أثناء اللعب">
+      <button type="button" class="adPlayClose" id="adPlayClose" title="إخفاء الإعلان" aria-label="إخفاء الإعلان">×</button>
+      <div id="adPlayInner" class="adPlayInner"></div>
     </div>
 
     <div id="flash"></div>
@@ -346,7 +351,7 @@
   </div>
 
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-<script type="module" src="app/boot.js?v=1795554639047"></script>
+<script type="module" src="app/boot.js?v=1795554901870"></script>
 </body>
 
 </html>

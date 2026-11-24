@@ -5,8 +5,9 @@ const ADS_CONFIG = {
   enabled: true,
   client: 'ca-pub-1820524955775833',
   slots: {
-    menu: '0000000000',  // اختياري: ضع رقم الوحدة الإعلانية للقائمة الرئيسية عند إنشائها
-    pause: '0000000000', // اختياري: ضع رقم الوحدة الإعلانية لقائمة التوقف المؤقت عند إنشائها
+    menu: '0000000000',     // اختياري: ضع رقم الوحدة الإعلانية للقائمة الرئيسية عند إنشائها
+    pause: '0000000000',    // اختياري: ضع رقم الوحدة الإعلانية لقائمة التوقف المؤقت عند إنشائها
+    gameplay: '0000000000', // اختياري: ضع رقم الوحدة الإعلانية للعب (أعلى يسار الشاشة) عند إنشائها
   },
 };
 
@@ -18,17 +19,18 @@ function isAdSenseConfigured() {
   );
 }
 
-function mountAdSlot(containerId, slotId) {
+function mountAdSlot(containerId, slotId, targetId = containerId) {
   const wrap = typeof document !== 'undefined' ? document.getElementById(containerId) : null;
-  if (!wrap) return;
+  const target = typeof document !== 'undefined' ? document.getElementById(targetId) : null;
+  if (!wrap || !target) return;
   if (!isAdSenseConfigured() || !/^\d{6,}$/.test(String(slotId || ''))) {
     wrap.classList.add('hidden');
     return;
   }
   wrap.classList.remove('hidden');
-  if (wrap.dataset.adMounted) return;
-  wrap.dataset.adMounted = '1';
-  wrap.innerHTML = `<span class="adLabel">إعلان</span><ins class="adsbygoogle" style="display:block" data-ad-client="${ADS_CONFIG.client}" data-ad-slot="${slotId}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+  if (target.dataset.adMounted) return;
+  target.dataset.adMounted = '1';
+  target.innerHTML = `<span class="adLabel">إعلان</span><ins class="adsbygoogle" style="display:block" data-ad-client="${ADS_CONFIG.client}" data-ad-slot="${slotId}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
   try {
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   } catch (_) {}
@@ -47,6 +49,12 @@ function initGoogleAds() {
   }
   mountAdSlot('adMenuBanner', ADS_CONFIG.slots.menu);
   mountAdSlot('adPauseBanner', ADS_CONFIG.slots.pause);
+  mountAdSlot('adPlayBanner', ADS_CONFIG.slots.gameplay, 'adPlayInner');
+  const closeBtn = document.getElementById('adPlayClose');
+  if (closeBtn && !closeBtn.dataset.bound) {
+    closeBtn.dataset.bound = '1';
+    closeBtn.onclick = () => document.getElementById('adPlayBanner')?.classList.add('hidden');
+  }
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
