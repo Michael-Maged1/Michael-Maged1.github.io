@@ -115,10 +115,10 @@ function initSparkSystem() {
  const geo = new THREE.BufferGeometry();
  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
  const mat = new THREE.PointsMaterial({
-  color: 0xffaa33,
-  size: 0.28,
+  color: 0xffb84d,
+  size: 0.17,
   transparent: true,
-  opacity: 0.9,
+  opacity: 0.95,
   blending: THREE.AdditiveBlending
  });
  sparkMesh = new THREE.Points(geo, mat);
@@ -158,10 +158,17 @@ function updateVehicleSparks(dt) {
   const p = sparkData[i];
   if (p.life > 0) {
    p.life -= dt;
-   p.vy -= 12 * dt;
+   p.vy -= 14 * dt;
    p.x += p.vx * dt;
    p.y += p.vy * dt;
    p.z += p.vz * dt;
+   const groundY = typeof roadHeightAt === 'function' ? roadHeightAt(p.x, p.z) + 0.03 : 0.03;
+   if (p.y < groundY && p.vy < 0) {
+    p.y = groundY;
+    p.vy = -p.vy * 0.35;
+    p.vx *= 0.65;
+    p.vz *= 0.65;
+   }
    pos[i * 3] = p.x;
    pos[i * 3 + 1] = p.y;
    pos[i * 3 + 2] = p.z;
@@ -190,7 +197,7 @@ function staticContact(hit) {
 
  if (closing >= 0) {
   // احتكاك حك مستمر أثناء الانزلاق بجانب مبنى أو سور (Scraping drag)
-  if (tangentSpeed > 0.8) {
+  if (tangentSpeed > 3.2) {
    const frictionDecel = Math.min(tangentSpeed * 0.5, 6.5 * SIM_STEP);
    car.vel.x -= (tangentX / tangentSpeed) * frictionDecel;
    car.vel.y -= (tangentZ / tangentSpeed) * frictionDecel;
@@ -227,7 +234,7 @@ function staticContact(hit) {
  }
  car.roll = clamp((car.roll || 0) - sideDot * impact * 0.03, -0.38, 0.38);
 
- if (tangentSpeed > 2.0 || impact > 2.0) {
+ if (tangentSpeed > 3.2 || impact > 4.5) {
   if (typeof sfxScrape === 'function') sfxScrape(Math.min(0.25, tangentSpeed / 14));
   spawnVehicleSparks(car.x - hit.nx * 0.9, car.y + 0.35, car.z - hit.nz * 0.9, tangentX, tangentZ, 7);
  }

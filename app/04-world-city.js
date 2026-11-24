@@ -5379,7 +5379,11 @@ function updateVisualOverhaulEffects(dt) {
   if (typeof car !== 'undefined' && typeof camera !== 'undefined' && OVERHAUL_FX.smokePool.length) {
     const sp = Math.abs(car.speed || 0);
     const isAccelerating = (typeof keys !== 'undefined' && (keys.KeyW || keys.ArrowUp)) || (typeof touch !== 'undefined' && touch.gas);
-    const isSkidding = ((typeof keys !== 'undefined' && (keys.Space || keys.KeyS)) || (typeof touch !== 'undefined' && (touch.hb || touch.brk)) || Math.abs(car.lateralAccel || 0) > 4.2) && sp > 3.0;
+    const isBraking = (typeof keys !== 'undefined' && (keys.KeyS || keys.ArrowDown)) || (typeof touch !== 'undefined' && touch.brk);
+    const isHb = (typeof keys !== 'undefined' && keys.Space) || (typeof touch !== 'undefined' && touch.hb);
+    const onRoad = typeof onDrivingRoad === 'function' ? onDrivingRoad(car.x, car.z, 0.5) : true;
+    const isRain = typeof G !== 'undefined' && G.weather === 'rain';
+    const isSkidding = !car.airborne && ((isHb && sp > 3.2) || (isBraking && (car.longAccel || 0) < -3.8 && sp > 5.0) || Math.abs(car.lateralAccel || 0) > 5.0 || (!onRoad && sp > 7.5));
     OVERHAUL_FX.smokeCd -= dt;
 
     if (OVERHAUL_FX.smokeCd <= 0 && (sp > 0.5 || isAccelerating || isSkidding)) {
@@ -5392,12 +5396,12 @@ function updateVisualOverhaulEffects(dt) {
         const side = (OVERHAUL_FX.smokeCursor % 2 === 0) ? 1 : -1;
         p.position.set(car.x - fx * 1.35 + rx * side * 0.74, Math.max(0.04, car.y + 0.12), car.z - fz * 1.35 + rz * side * 0.74);
         p.userData.age = 0;
-        p.userData.maxAge = 0.55 + Math.random() * 0.35;
+        p.userData.maxAge = !onRoad ? 0.65 + Math.random() * 0.35 : 0.55 + Math.random() * 0.35;
         p.userData.vx = rx * side * (0.8 + Math.random() * 0.6) - fx * sp * 0.2;
         p.userData.vy = 0.6 + Math.random() * 0.8;
         p.userData.vz = rz * side * (0.8 + Math.random() * 0.6) - fz * sp * 0.2;
-        p.material.opacity = 0.58;
-        p.material.color.setHex(0xf4f4f4);
+        p.material.opacity = !onRoad ? 0.50 : isRain ? 0.34 : 0.56;
+        p.material.color.setHex(!onRoad ? 0xc8ad84 : isRain ? 0xcfe4f5 : 0xe8eaed);
         p.scale.setScalar(0.40);
         p.visible = true;
       } else {
