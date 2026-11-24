@@ -536,7 +536,6 @@ function releaseDrivingInput(){
   for(const k of Object.keys(keys))keys[k]=false;
   for(const k of Object.keys(touch))touch[k]=false;
   resetSimulationClock();
-  if(G.state==='play')pauseGame();
 }
 addEventListener('blur',releaseDrivingInput);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseDrivingInput();});
