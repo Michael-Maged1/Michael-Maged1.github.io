@@ -582,7 +582,7 @@ function surfaceSetup(root) {
   for(const m of mats) {
    if(m.map&&typeof renderer!=='undefined'&&renderer?.capabilities?.getMaxAnisotropy)m.map.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
    if(m.metalness!==undefined)m.envMapIntensity=.65;
-   const isGlass=/glass|vitre|steclo|windshield|fara|lens|lamp|light|blinker|window/i.test(m.name||'') || /glass|vitre|windshield/i.test(o.name||'');
+   const isGlass=/glass|vitre|steclo|windshield|window/i.test(m.name||'') || /glass|vitre|windshield/i.test(o.name||'');
    m.transmission=0;
    if(m.thickness!==undefined)m.thickness=0;
    if(!isGlass){
@@ -591,10 +591,10 @@ function surfaceSetup(root) {
     m.depthWrite=true;
     m.depthTest=true;
     m.alphaTest=0;
-    if(m.side!==THREE.DoubleSide)m.side=THREE.FrontSide;
+    m.side=THREE.DoubleSide;
    }else{
     m.transparent=true;
-    m.opacity=Math.max(0.35, Math.min(0.7, m.opacity || 0.5));
+    m.opacity=Math.max(0.35, Math.min(0.68, m.opacity || 0.48));
     m.depthWrite=true;
     m.depthTest=true;
    }
@@ -1012,7 +1012,6 @@ function _upgradeTrafficItem(t,key){
  const baseKey=choice.replace(/_traffic$/,'');
  if(UPLOADED_MODELS[baseKey]){
   if(importedModels.loaded[baseKey])choice=baseKey;
-  else if(importedModels.loaded[baseKey+'_traffic']&&!currentImport)choice=baseKey+'_traffic';
   else return;
  }else if(!importedModels.loaded[choice]||currentImport)return;
  const detailed=/^traffic_(?:tuktuk|moped|bicycle|bus3d)$/.test(choice)?streetLifeVisual(choice):vehicleVisual(choice,t.mesh.userData.paint||0x899da7,false);
@@ -1136,7 +1135,6 @@ async function initImportedModels(){
   'man', 'woman', 'micro'
  ];
  for(const k of priority){if(MODEL_PACKED[k]&&!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
- for(const k of allKeys){if(k.endsWith('_traffic')&&!k.startsWith('police')&&!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
 
  const total=queue.length;
  let completed=0;

@@ -1797,7 +1797,7 @@ for (const vx of [-960, -480, 0, 480, 960]) {
 const STREET_LIFE={time:0,overtakes:0,stops:0,pedestrianYields:0,version:3,blockedMoves:0};
 function lifeRoad(edge){return ASSYUT.roads[edge.road];}
 function edgeFrame(edge){const a=ASSYUT.nodes[edge.a],b=ASSYUT.nodes[edge.b],length=Math.hypot(b.x-a.x,b.z-a.z);return {a,b,length,fx:(b.x-a.x)/length,fz:(b.z-a.z)/length};}
-const TRAFFIC_MODELS_EXTRA=['traffic_peugeot405','traffic_corolla','traffic_logan','traffic_lada','traffic_tucson','traffic_hilux','traffic_sprinter','traffic_hiace'];
+const TRAFFIC_MODELS_EXTRA=['traffic_peugeot405','traffic_peugeot205','traffic_corolla','traffic_logan','traffic_lada','traffic_kombi','traffic_tucson','traffic_uno','traffic_hilux','traffic_sprinter','traffic_hiace'];
 function chooseNextEdge(t){
  const choices=ASSYUT.adj[t.edge.b].map(a=>ASSYUT.edges[a.edge]).filter(e=>e&&ASSYUT.roads[e.road].width>=(t.kind==='bus'?10:6));
  const forward=choices.filter(e=>e.b!==t.edge.a),list=forward.length?forward:choices;
@@ -1871,8 +1871,7 @@ function initializeStreetTraffic(){
   if(traffic.some(t=>Math.hypot(t.mesh.position.x-p.x,t.mesh.position.z-p.z)<8.5&&Math.abs((t.mesh.position.y||0)-y)<2.5))continue;
   if(kind==='car'||kind==='modern'){
    if(carSequence<civilianUploaded.length)mesh.userData.modelKey=civilianUploaded[carSequence++].asset;
-   else if(extraSequence++%5<3)mesh.userData.modelKey=TRAFFIC_MODELS_EXTRA[(extraSequence-1)%TRAFFIC_MODELS_EXTRA.length];
-   else mesh.userData.modelKey=civilianUploaded[carSequence++%civilianUploaded.length].asset;
+   else mesh.userData.modelKey=TRAFFIC_MODELS_EXTRA[(extraSequence++)%TRAFFIC_MODELS_EXTRA.length];
   }else if(kind==='micro'){
    mesh.userData.modelKey=Math.random()<.60?'traffic_hiace':'traffic_sprinter';
   }else if(kind==='tuktuk')mesh.userData.modelKey='traffic_tuktuk';
