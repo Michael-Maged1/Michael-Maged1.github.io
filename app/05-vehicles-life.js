@@ -1261,8 +1261,8 @@ function spawnPoliceCrimeScene(stop,incident){
   POLICE.actors.push(off);
  }
 
- // 3. Crowd of 6 Egyptian citizen spectators gathered around
- const crowdTotal=6;
+ // 3. Crowd of Egyptian citizen spectators gathered around
+ const crowdTotal=3;
  for(let i=0;i<crowdTotal;i++){
   const bystander=makePerson(pick(SHIRTS),pick(SKIN));
   const angle=(i/crowdTotal)*Math.PI*2+rand(-0.2,0.2);
@@ -1295,10 +1295,12 @@ function spawnPoliceCrimeScene(stop,incident){
   POLICE.actors.push(carMesh);
  }
 
- // 5. Emergency flashing strobe light
- const strobe=new THREE.PointLight(0x0055ff,3,30);
- strobe.castShadow=false;
- strobe.position.set(cx+fx*4.2+nx*1.5,cy+1.75,cz+fz*4.2+nz*1.5);
+ // 5. Emergency flashing strobe light (lightweight Sprite to avoid WebGL PointLight shader recompilation)
+ const strobeMat=new THREE.SpriteMaterial({color:0x0055ff,transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false});
+ const strobe=new THREE.Sprite(strobeMat);
+ strobe.scale.set(4.5,4.5,1);
+ strobe.position.set(cx+fx*4.2+nx*1.5,cy+1.95,cz+fz*4.2+nz*1.5);
+ strobe.color=strobeMat.color;
  strobe.userData.isStrobe=true;
  scene.add(strobe);
  POLICE.actors.push(strobe);
