@@ -123,7 +123,7 @@ function applyGraphicsSettings(mode) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.pixelRatio));
   renderer.shadowMap.enabled = cfg.shadows;
   if (cfg.shadows) {
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = quality === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     sun.castShadow = true;
     sun.shadow.mapSize.set(cfg.shadowMapSize, cfg.shadowMapSize);
     if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
@@ -993,40 +993,68 @@ function animateCycleRider(rider,pedalPhase){
   if(side.foot)side.foot.bone.quaternion.copy(side.foot.rest).multiply(q.setFromAxisAngle(side.foot.ax,footA));
  }
 }
+function _upgradeTrafficItem(t,key){
+ if(!['car','modern','micro','tuktuk','bus','motorcycle','bicycle'].includes(t.kind))return;
+ const currentImport=t.mesh.userData.imported;
+ if(currentImport&&!currentImport.endsWith('_traffic'))return;
+ let choice=t.mesh.userData.modelKey||(t.kind==='modern'?'qashqai':t.kind==='micro'?'micro':'micra');
+ const baseKey=choice.replace(/_traffic$/,'');
+ if(UPLOADED_MODELS[baseKey]){
+  if(importedModels.loaded[baseKey])choice=baseKey;
+  else if(importedModels.loaded[baseKey+'_traffic']&&!currentImport)choice=baseKey+'_traffic';
+  else return;
+ }else if(!importedModels.loaded[choice]||currentImport)return;
+ const detailed=/^traffic_(?:tuktuk|moped|bicycle|bus3d)$/.test(choice)?streetLifeVisual(choice):vehicleVisual(choice,t.mesh.userData.paint||0x899da7,false);
+ if(!detailed)return;
+ if((t.kind==='bicycle'||t.kind==='motorcycle')&&t.mesh.userData.rider&&typeof cloneSkeleton==='function'){
+  const rider=cloneSkeleton(t.mesh.userData.rider);rider.visible=true;detailed.add(rider);
+ }
+ t.mesh.clear();
+ t.mesh.add(detailed);
+ t.mesh.userData.imported=choice;
+ if(detailed.userData.wheels?.length)t.mesh.userData.wheels=detailed.userData.wheels;
+ const def=CARS.find(c=>c.asset===choice.replace(/_traffic$/,'')),spec=EXTRA_TRAFFIC_SPECS[choice];
+ if(def?.uploaded){t.hl=def.length/2;t.hw=def.halfWidth;}
+ else if(spec){t.hl=spec.len/2;t.hw=spec.hw;}
+ else if(choice==='micro'){t.hl=2.4;t.hw=.97;}
+ t.mesh.userData.brakeMaterials=[];detailed.traverse(o=>{if(o.isMesh&&/brakelight|stoplamp|rearlight|red_lens|stopari/i.test(o.material?.name||''))t.mesh.userData.brakeMaterials.push(o.material);});
+}
+const _upgradeTasks=[];let _upgradeScheduled=false;
+function _flushUpgradeQueue(){
+ _upgradeScheduled=false;
+ const batch=_upgradeTasks.splice(0,3);
+ for(const fn of batch)try{fn();}catch(_){}
+ if(_upgradeTasks.length&&typeof requestAnimationFrame==='function'){
+  _upgradeScheduled=true;
+  requestAnimationFrame(_flushUpgradeQueue);
+ }
+}
+function _enqueueUpgrade(fn){
+ _upgradeTasks.push(fn);
+ if(!_upgradeScheduled&&typeof requestAnimationFrame==='function'){
+  _upgradeScheduled=true;
+  requestAnimationFrame(_flushUpgradeQueue);
+ }
+}
 function upgradeLoadedModels(key) {
+ const isTest=(typeof navigator!=='undefined'&&navigator.userAgent==='test')||typeof requestAnimationFrame!=='function';
  if(!['man','woman'].includes(key)) {
   if(CARS[G.carIdx]?.asset===key)swapTaxi(G.carIdx);
   for(const t of traffic) {
-   if(!['car','modern','micro','tuktuk','bus','motorcycle','bicycle'].includes(t.kind))continue;
-   const currentImport=t.mesh.userData.imported;
-   if(currentImport&&!currentImport.endsWith('_traffic'))continue;
-   let choice=t.mesh.userData.modelKey||(t.kind==='modern'?'qashqai':t.kind==='micro'?'micro':'micra');
-   const baseKey=choice.replace(/_traffic$/,'');
-   if(UPLOADED_MODELS[baseKey]){
-    if(importedModels.loaded[baseKey])choice=baseKey;
-    else if(importedModels.loaded[baseKey+'_traffic']&&!currentImport)choice=baseKey+'_traffic';
-    else continue;
-   }else if(!importedModels.loaded[choice]||currentImport)continue;
-   const detailed=/^traffic_(?:tuktuk|moped|bicycle|bus3d)$/.test(choice)?streetLifeVisual(choice):vehicleVisual(choice,t.mesh.userData.paint||0x899da7,false);
-   if(!detailed)continue;
-   if((t.kind==='bicycle'||t.kind==='motorcycle')&&t.mesh.userData.rider&&typeof cloneSkeleton==='function'){
-    const rider=cloneSkeleton(t.mesh.userData.rider);rider.visible=true;detailed.add(rider);
-   }
-   t.mesh.clear();
-   t.mesh.add(detailed);
-   t.mesh.userData.imported=choice;
-   if(detailed.userData.wheels?.length)t.mesh.userData.wheels=detailed.userData.wheels;
-   const def=CARS.find(c=>c.asset===choice.replace(/_traffic$/,'')),spec=EXTRA_TRAFFIC_SPECS[choice];
-   if(def?.uploaded){t.hl=def.length/2;t.hw=def.halfWidth;}
-   else if(spec){t.hl=spec.len/2;t.hw=spec.hw;}
-   else if(choice==='micro'){t.hl=2.4;t.hw=.97;}
-   t.mesh.userData.brakeMaterials=[];detailed.traverse(o=>{if(o.isMesh&&/brakelight|stoplamp|rearlight|red_lens|stopari/i.test(o.material?.name||''))t.mesh.userData.brakeMaterials.push(o.material);});
+   if(isTest)_upgradeTrafficItem(t,key);
+   else _enqueueUpgrade(()=>_upgradeTrafficItem(t,key));
   }
  }
  if(key==='man'||key==='woman') {
-  peds.forEach((p,i)=>attachImportedPerson(p.mesh,i%3===0?'woman':'man'));
-  attachImportedPerson(passenger,'man');
-  if(key==='man')for(const t of traffic){if(!t.mesh.userData.twoWheeler||t.mesh.userData.riderDetail)continue;const rider=personVisual('man');if(!rider)continue;t.mesh.userData.rider.visible=false;poseCycleRider(rider,t.kind==='bicycle');t.mesh.add(rider);t.mesh.userData.riderDetail=rider;}
+  if(isTest){
+   peds.forEach((p,i)=>attachImportedPerson(p.mesh,i%3===0?'woman':'man'));
+   attachImportedPerson(passenger,'man');
+   if(key==='man')for(const t of traffic){if(!t.mesh.userData.twoWheeler||t.mesh.userData.riderDetail)continue;const rider=personVisual('man');if(!rider)continue;t.mesh.userData.rider.visible=false;poseCycleRider(rider,t.kind==='bicycle');t.mesh.add(rider);t.mesh.userData.riderDetail=rider;}
+  }else{
+   _enqueueUpgrade(()=>attachImportedPerson(passenger,'man'));
+   peds.forEach((p,i)=>_enqueueUpgrade(()=>attachImportedPerson(p.mesh,i%3===0?'woman':'man')));
+   if(key==='man')for(const t of traffic){if(!t.mesh.userData.twoWheeler||t.mesh.userData.riderDetail)continue;_enqueueUpgrade(()=>{if(t.mesh.userData.riderDetail)return;const rider=personVisual('man');if(!rider)return;t.mesh.userData.rider.visible=false;poseCycleRider(rider,t.kind==='bicycle');t.mesh.add(rider);t.mesh.userData.riderDetail=rider;});}
+  }
  }
 }
 
@@ -1121,14 +1149,14 @@ async function initImportedModels(){
    finally{
     await updateLoadBar(key);
     if(typeof G!=='undefined'&&G.state==='play'){
-     await new Promise(r=>setTimeout(r,120));
+     await new Promise(r=>setTimeout(r,260));
     }else{
-     await new Promise(r=>setTimeout(r,16));
+     await new Promise(r=>setTimeout(r,24));
     }
    }
   }
  };
- await Promise.allSettled([worker(),worker()]);
+ await worker();
 
  loadingUI.setProgress(0.96,'تهيئة معالج الرسوميات وتثبيت الإطارات…');
  if(typeof requestAnimationFrame==='function')await new Promise(r=>requestAnimationFrame(r));

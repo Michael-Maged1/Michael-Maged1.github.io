@@ -36,13 +36,14 @@ function mountAdSlot(containerId, slotId) {
 
 function initGoogleAds() {
   if (typeof document === 'undefined' || !isAdSenseConfigured()) return;
-  if (!document.querySelector('script[data-adsense-client]')) {
+  const hasScript = typeof document.querySelector === 'function' && document.querySelector('script[data-adsense-client]');
+  if (!hasScript && document.head && typeof document.createElement === 'function') {
     const s = document.createElement('script');
     s.async = true;
     s.crossOrigin = 'anonymous';
-    s.dataset.adsenseClient = ADS_CONFIG.client;
+    if (s.dataset) s.dataset.adsenseClient = ADS_CONFIG.client;
     s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(ADS_CONFIG.client)}`;
-    document.head.appendChild(s);
+    document.head.appendChild?.(s);
   }
   mountAdSlot('adMenuBanner', ADS_CONFIG.slots.menu);
   mountAdSlot('adPauseBanner', ADS_CONFIG.slots.pause);

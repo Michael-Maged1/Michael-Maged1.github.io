@@ -121,7 +121,7 @@ function applyGraphicsSettings(mode) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.pixelRatio));
   renderer.shadowMap.enabled = cfg.shadows;
   if (cfg.shadows) {
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = quality === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
     sun.castShadow = true;
     sun.shadow.mapSize.set(cfg.shadowMapSize, cfg.shadowMapSize);
     if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }

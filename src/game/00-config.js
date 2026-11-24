@@ -92,34 +92,34 @@ const VISUAL_CONFIG = {
     cracks: true                 // Worn road stress cracks
   },
 
-  // 7. ملفات الجودة للأجهزة المتوسطة (Switchable at runtime)
+  // 7. ملفات الجودة للأجهزة المتوسطة والضعيفة (Switchable at runtime)
   presets: {
     low: {
-      pixelRatio: 1.0,
+      pixelRatio: 0.9,
       shadows: false,
       shadowMapSize: 512,
-      vignette: true,
-      colorGrading: true,
+      vignette: false,
+      colorGrading: false,
       bloom: false,
-      fogDensity: 0.0018
+      fogDensity: 0.0021
     },
     medium: {
-      pixelRatio: 1.25,
+      pixelRatio: 1.0,
+      shadows: true,
+      shadowMapSize: 512,
+      vignette: true,
+      colorGrading: false,
+      bloom: false,
+      fogDensity: 0.00165
+    },
+    high: {
+      pixelRatio: 1.35,
       shadows: true,
       shadowMapSize: 1024,
       vignette: true,
       colorGrading: true,
-      bloom: false,
-      fogDensity: 0.00145
-    },
-    high: {
-      pixelRatio: 1.5,
-      shadows: true,
-      shadowMapSize: 2048,
-      vignette: true,
-      colorGrading: true,
       bloom: true,
-      fogDensity: 0.0013
+      fogDensity: 0.00135
     }
   }
 };
