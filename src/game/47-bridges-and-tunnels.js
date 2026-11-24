@@ -48,11 +48,11 @@ function infrastructureRoadPoint(road,d){const r=ASSYUT.roads[road];for(const si
     const isManfaz=/منفذ/.test(p.name||'');
     const leftTitle=isManfaz?'نفق المنفذ':'نفق الأزهر';
     const rightTitle=isManfaz?'محطة أسيوط · شارع الجمهورية':'شارع الجيش · جامعة أسيوط';
-    const gantry=makeOverheadGantry(leftTitle,rightTitle,w+1.8,5.4,isManfaz?'المنفذ · حي غرب':'الأزهر · شرق أسيوط');
+    const gantry=makeOverheadGantry(leftTitle,rightTitle,w+3.6,5.4,isManfaz?'المنفذ · حي غرب':'الأزهر · شرق أسيوط');
     gantry.position.set(start.x,0,start.z);gantry.rotation.y=-Math.atan2(start.fz,start.fx);REAL_CITY.group.add(gantry);
     // يافطة زرقاء ثانية على مدخل النفق من الجهة المقابلة
     const endPt=infrastructureRoadPoint(ri,Math.max(p.length*.85,p.length-14));
-    const gantryEnd=makeOverheadGantry(leftTitle,isManfaz?'شارع الجلاء · ميدان المحطة':'وسط أسيوط',w+1.8,5.4,isManfaz?'المنفذ · اتجاه المحطة':'نفق الأزهر');
+    const gantryEnd=makeOverheadGantry(leftTitle,isManfaz?'شارع الجلاء · ميدان المحطة':'وسط أسيوط',w+3.6,5.4,isManfaz?'المنفذ · اتجاه المحطة':'نفق الأزهر');
     gantryEnd.position.set(endPt.x,0,endPt.z);gantryEnd.rotation.y=-Math.atan2(endPt.fz,endPt.fx)+Math.PI;REAL_CITY.group.add(gantryEnd);
   }
  }
@@ -76,13 +76,16 @@ function selectDrivingSurface(){
  const curKind=INFRA.profiles.get(car.surfaceRoad)?.kind;
  const locked=candidates.filter(p=>p.road===car.surfaceRoad&&INFRA.profiles.has(p.road)&&p.distance<p.s.width/2+(curKind==='tunnel'&&car.y<-0.2?2.2:.65)&&p.raw>=-.08&&p.raw<=1.08).sort((a,b)=>a.distance-b.distance)[0];
  if(locked&&Math.abs(locked.height-car.y)<1.4)return;
- let best=null;for(const p of candidates){if(p.height-car.y>.75)continue;if(car.y<-0.35&&p.height>-0.15)continue;const ramp=INFRA.profiles.has(p.road)&&Math.abs(p.height)<.65&&p.alignment>.85&&p.raw>=0&&p.raw<=1;const score=p.distance*.45+Math.abs(p.height-car.y)*2+(1-p.alignment)*1.8-(ramp?2.5:0);if(!best||score<best.score)best={...p,score};}car.surfaceRoad=best?.road;
+ let best=null;for(const p of candidates){if(Math.abs(p.height-car.y)>1.15)continue;if(car.y<-0.35&&p.height>-0.15)continue;const ramp=INFRA.profiles.has(p.road)&&Math.abs(p.height)<.65&&p.alignment>.85&&p.raw>=0&&p.raw<=1;const score=p.distance*.45+Math.abs(p.height-car.y)*2+(1-p.alignment)*1.8-(ramp?2.5:0);if(!best||score<best.score)best={...p,score};}if(best)car.surfaceRoad=best.road;else if(car.y>=-0.2)car.surfaceRoad=undefined;
 }
 function sampledDriveHeight(x,z,currentY,preferredRoad){
  for(const p of STATION_SURFACES){const dx=x-p.x,dz=z-p.z,lx=dx*Math.cos(p.yaw)-dz*Math.sin(p.yaw),lz=dx*Math.sin(p.yaw)+dz*Math.cos(p.yaw)+2.7;if(Math.abs(lx)<11.5&&Math.abs(lz)<9.5)return .18;}
  const candidates=driveSurfaceCandidates(x,z);
- if(Number.isInteger(preferredRoad)&&INFRA.profiles.has(preferredRoad)){const same=candidates.filter(p=>p.road===preferredRoad).sort((a,b)=>a.distance-b.distance)[0];if(same&&same.height-currentY<=1.05)return same.height;}
- let best=null;for(const p of candidates){if(p.height-currentY>.85)continue;const score=p.distance*.45+Math.abs(p.height-currentY)*2;if(!best||score<best.score)best={...p,score};}return best?best.height:assyutRoadHeightAt(x,z);
+ if(Number.isInteger(preferredRoad)&&INFRA.profiles.has(preferredRoad)){const same=candidates.filter(p=>p.road===preferredRoad).sort((a,b)=>a.distance-b.distance)[0];if(same&&Math.abs(same.height-currentY)<=1.25)return same.height;}
+ let best=null;for(const p of candidates){if(Math.abs(p.height-currentY)>1.25)continue;const score=p.distance*.45+Math.abs(p.height-currentY)*2;if(!best||score<best.score)best={...p,score};}
+ if(best)return best.height;
+ if(currentY<-0.3||currentY>0.6)return currentY;
+ return assyutRoadHeightAt(x,z);
 }
 function resolveInfrastructureRails(){
  for(const b of INFRA.barriers){
