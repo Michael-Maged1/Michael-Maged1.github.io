@@ -464,18 +464,16 @@ function sfxCash() {
   setTimeout(() => tone(1568, .16, 'sine', .10), 140);
 }
 function sfxCrash() {
-  // اصطدام واقعي: ضربة شاسيه منخفضة + تهشم صاج وزجاج
-  tone(105, .20, 'sine', .24, -70);
-  tone(64, .24, 'triangle', .18, -32);
-  noiseBurst(0.24, 920, 0.9, 0.22, 'bandpass', 260);
-  noiseBurst(0.16, 2600, 1.4, 0.12, 'highpass');
+  // خبطة هيكل سيارة دافئة ومكتومة من داخل المقصورة (بدون ضجيج حاد أو إزعاج)
+  tone(92, .16, 'sine', .11, -56);
+  noiseBurst(0.13, 340, 0.85, 0.075, 'lowpass');
 }
 let scrapeAudioCd = 0;
-function sfxScrape(vol = 0.15) {
+function sfxScrape(vol = 0.08) {
   if (typeof AC === 'undefined' || !AC || !G.sound || scrapeAudioCd > 0) return;
-  scrapeAudioCd = 0.085;
-  const v = Math.min(0.18, vol);
-  noiseBurst(0.09, 1750 + Math.random() * 950, 2.6, v, 'bandpass');
+  scrapeAudioCd = 0.18;
+  const v = Math.min(0.055, vol * 0.45);
+  noiseBurst(0.08, 480 + Math.random() * 280, 1.4, v, 'bandpass');
 }
 function sfxBump() {
   // مطب صناعي: ارتطام مساعدين وإطارات مطاطية
