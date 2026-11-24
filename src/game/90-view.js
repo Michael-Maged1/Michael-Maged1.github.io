@@ -246,11 +246,26 @@ function drawMinimap() {
     }
   }
 
+  // محطات الوقود
+  if (typeof FUEL_STATIONS !== 'undefined') {
+    for (const fs of FUEL_STATIONS) {
+      const mx = tx(fs.x), mz = tz(fs.z);
+      if (mx < -8 || mx > W + 8 || mz < -8 || mz > H + 8) continue;
+      mmCtx.fillStyle = '#22c55e';
+      mmCtx.beginPath();
+      mmCtx.arc(mx, mz, 4.5, 0, 7);
+      mmCtx.fill();
+      mmCtx.strokeStyle = '#ffffff';
+      mmCtx.lineWidth = 1.2;
+      mmCtx.stroke();
+    }
+  }
+
   // سيارات المرور
   for (const t of traffic) {
-    mmCtx.fillStyle = t.dir > 0 ? '#e2c56a' : '#88a4df';
+    mmCtx.fillStyle = t.policeSuspect ? '#ff3b3b' : (t.dir > 0 ? '#e2c56a' : '#88a4df');
     mmCtx.beginPath();
-    mmCtx.arc(tx(t.mesh.position.x), tz(t.mesh.position.z), 2.2, 0, 7);
+    mmCtx.arc(tx(t.mesh.position.x), tz(t.mesh.position.z), t.policeSuspect ? 3.8 : 2.2, 0, 7);
     mmCtx.fill();
   }
 

@@ -45,6 +45,27 @@ function issuePoliceCall(){
   {id:'stolen',label:'ضبط سيارة مسروقة ومحاصرة الجناة',speed:0},
   {id:'checkpoint',label:'اشتباه واستيقاف أمني بالشارع',speed:0}
  ];
+ const isTestEnv=typeof navigator!=='undefined'&&navigator.userAgent==='test';
+ const pursuitCandidate=!isTestEnv&&POLICE.completed>0&&Math.random()<0.45&&typeof traffic!=='undefined'&&traffic.length?traffic.find(t=>t?.mesh&&Math.hypot(t.mesh.position.x-car.x,t.mesh.position.z-car.z)>60):null;
+ if(pursuitCandidate){
+  pursuitCandidate.policeSuspect=true;
+  pursuitCandidate.baseSpeed=Math.max(pursuitCandidate.baseSpeed||14,19);
+  POLICE.suspect=pursuitCandidate;
+  POLICE.call={...stop,stop,count:1,type:'pursuit',label:'مطاردة سيارة هاربة ترفض التوقف'};
+  POLICE.station=station;
+  POLICE.phase='pursuit';
+  POLICE.siren=true;
+  POLICE.hold=0;
+  M.phase='policeScene';
+  pickupMarker.visible=false;
+  destMarker.visible=false;
+  refreshPoliceNavigation();
+  setObjective('🚨 مطاردة جارية · لاحق السيارة الهاربة وحاصرها لإيقافها',5000);
+  sfxPickup();
+  renderPoliceDispatch();
+  updateHUD();
+  return true;
+ }
  const incident=pick(incidents);
  POLICE.call={...stop,stop,count:2,type:incident.id,label:incident.label};
  POLICE.station=station;
@@ -227,7 +248,21 @@ function updatePoliceMission(dt){
  if(POLICE.navTimer<=0)refreshPoliceNavigation();
  const distance=Math.hypot(target.x-car.x,target.z-car.z),stopped=Math.hypot(car.vel.x,car.vel.y)<1.2;
 
- if(POLICE.phase==='respond'){
+ if(POLICE.phase==='pursuit'){
+  if(!POLICE.suspect||!POLICE.suspect.mesh){POLICE.phase='respond';}
+  else{
+   POLICE.suspect.speed=Math.max(POLICE.suspect.speed||18,18);
+   if(distance<11){
+    POLICE.hold+=dt;
+    showPrompt(`🚨 جاري محاصرة السيارة الهاربة (${Math.min(100,Math.round((POLICE.hold/1.2)*100))}%)`);
+    if(POLICE.hold>=1.2){POLICE.suspect.speed=0;playPoliceClip('arrest');}
+   }else{
+    POLICE.hold=0;
+    if(distance<35)showPrompt('اقترب من السيارة الهاربة واعترض طريقها لإيقافها');
+    else hidePrompt();
+   }
+  }
+ }else if(POLICE.phase==='respond'){
   if(distance<10&&Math.abs(car.y-navigationStopHeight(target))<2.2&&stopped){
    POLICE.hold+=dt;
    showPrompt(`🚨 جاري تأمين الموقع ونقل المتهمين إلى الدورية (${Math.min(100,Math.round((POLICE.hold/1.0)*100))}%)`);

@@ -70,12 +70,21 @@ function completeRideTrip(){
  const d=Math.hypot(car.x-M.destX,car.z-M.destZ);
  if(d>=8.5||Math.abs(car.y-navigationStopHeight({x:M.destX,z:M.destZ,roadIndex:M.destRoad}))>=1||Math.hypot(car.vel.x,car.vel.y)>=1.4)return false;
  const speedPenalty=Math.min(1,(M.speedViolations||0)/18),hitPenalty=(M.hits||0)*.25,comfortPenalty=Math.min(1.2,(M.comfortPenalty||0)/14);
- const pay=Math.round(M.quotedFare*(1-Math.min(.25,comfortPenalty*.08))),rating=clamp(+(5-hitPenalty-speedPenalty-comfortPenalty).toFixed(1),1,5);
- const receipt={id:M.offerId,pay,rating,name:M.riderName,pickup:M.pickupName,dest:M.destName,time:M.tripTime,distance:M.tripDistance,preference:M.preference};
+ let tip=0;
+ if(M.preference==='quiet'&&typeof isMusicPlaying==='function'&&!isMusicPlaying())tip=15;
+ else if(M.preference==='radio'&&typeof isMusicPlaying==='function'&&isMusicPlaying())tip=15;
+ else if(M.preference==='smooth'&&(M.hits||0)===0&&(M.comfortPenalty||0)<2)tip=20;
+ else if(M.preference==='fast'&&M.tripTime>0&&M.tripTime<=Math.max(25,(M.tripDistance||400)/11))tip=25;
+ const pay=Math.round(M.quotedFare*(1-Math.min(.25,comfortPenalty*.08)))+tip,rating=clamp(+(5-hitPenalty-speedPenalty-comfortPenalty).toFixed(1),1,5);
+ const receipt={id:M.offerId,pay,tip,rating,name:M.riderName,pickup:M.pickupName,dest:M.destName,time:M.tripTime,distance:M.tripDistance,preference:M.preference};
  // End the trip before crediting it, so repeated actions cannot pay twice.
  M.phase='none';M.hold=0;M.timer=0;
  G.money+=pay;G.xp+=35;G.trips++;G.totalEarned+=pay;G.ratingTotal+=rating;G.ratedTrips++;
- RIDE.sessionEarned+=pay;RIDE.sessionTrips++;RIDE.navigation=null;RIDE.receipt=receipt;RIDE.receiptLeft=8;RIDE.nextIn=rand(12,22);RIDE.expanded=true;RIDE.notice='اكتملت الرحلة';
+ if((M.hits||0)===0&&rating>=4.5&&!G.dailyBonusClaimed){
+  G.dailyCleanTrips=(G.dailyCleanTrips||0)+1;
+  if(G.dailyCleanTrips>=3){G.dailyBonusClaimed=true;G.money+=300;G.totalEarned+=300;if(typeof floatText==='function')floatText('🏆 تحدي الوردية: 3 رحلات نظيفة (+300 ج.م)','#ffd34d');}
+ }
+ RIDE.sessionEarned+=pay;RIDE.sessionTrips++;RIDE.navigation=null;RIDE.receipt=receipt;RIDE.receiptLeft=8;RIDE.nextIn=rand(12,22);RIDE.expanded=true;RIDE.notice=tip?`اكتملت الرحلة (+${tip} ج.م بقشيش)`:'اكتملت الرحلة';
  passenger.visible=false;pickupMarker.visible=false;destMarker.visible=false;arrow.visible=false;arrowGlow.visible=false;
  hidePrompt();saveProgress();sfxCash();floatText(`+${fmt(pay)} ج.م`,'#8be7b8');
  renderDriverPhone(true);updateHUD();setObjective(`اكتملت الرحلة · أُضيف ${fmt(pay)} ج.م إلى محفظتك`,4000);return true;
@@ -90,6 +99,15 @@ function updateDriverShift(dt){
   M.tripTime+=dt;
   if(Math.abs(car.longAccel||0)>5.5||Math.abs(car.lateralAccel||0)>4.8)M.comfortPenalty=(M.comfortPenalty||0)+dt;
   if(Math.abs(car.speed)>20)M.speedViolations=(M.speedViolations||0)+dt;
+  M.reactCooldown=(M.reactCooldown||4)-dt;
+  if((M.hits||0)>(M._lastHits||0)){M._lastHits=M.hits;M.reactCooldown=7;if(typeof floatText==='function')floatText('الراكب: حاسب يا أسطى!','#ff8a8a');}
+  else if(M.reactCooldown<=0){
+   M.reactCooldown=11;
+   const musicOn=typeof isMusicPlaying==='function'&&isMusicPlaying();
+   if(M.preference==='quiet'&&musicOn&&typeof floatText==='function')floatText('الراكب: ممكن نوطي الكاسيت شوية؟','#ffd34d');
+   else if(M.preference==='radio'&&!musicOn&&typeof floatText==='function')floatText('الراكب: شغّلنا الراديو لو سمحت 🎵','#ffd34d');
+   else if(M.tripTime>12&&(M.hits||0)===0&&(M.comfortPenalty||0)<1.5&&typeof floatText==='function')floatText('الراكب: سواقتك هادية ومريحة 👍','#8be7b8');
+  }
  }
  RIDE.navTimer-=dt;if(RIDE.navTimer<=0){RIDE.navTimer=2.5;refreshRideNavigation();}
  const target=M.phase==='toPick'?{x:M.pickupX,z:M.pickupZ}:{x:M.destX,z:M.destZ};

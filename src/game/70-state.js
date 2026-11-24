@@ -54,7 +54,7 @@ const G = {
   // شمس الظهيرة المصرية المشرقة مطابقة للصورة المرجعية
   clock: 12 * 60,
   cycle: true,
-  timeRate: .9,
+  timeRate: .6,
   timeSpeed: 2.4,
   weather: store.get('alex_taxi_weather', DEFAULT_SETTINGS.weather) || DEFAULT_SETTINGS.weather,
   dynWeather: true,
@@ -71,6 +71,9 @@ const G = {
   totalEarned: Math.max(0,+store.get('alex_driver_earned','0')||0),
   ratingTotal: Math.max(0,+store.get('alex_driver_rating_total','0')||0),
   ratedTrips: Math.max(0,+store.get('alex_driver_rated','0')||0),
+  fuel: clamp(+store.get('assyut_fuel','100')||100, 15, 100),
+  dailyCleanTrips: 0,
+  dailyBonusClaimed: false,
   camMode: 0,
   menuT: 0,
   hudT: 0,
@@ -234,4 +237,5 @@ function saveProgress() {
   store.set('alex_taxi_paints', JSON.stringify(G.paints));
   store.set('alex_taxi_ach', JSON.stringify(G.achievements));
   store.set('assyut_graphics_quality', G.graphicsQuality || 'balanced');
+  store.set('assyut_fuel', Math.round(G.fuel == null ? 100 : G.fuel));
 }

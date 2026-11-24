@@ -88,6 +88,8 @@ function loop() {
     updateArchitectureDetails();
     if(typeof updateVillageRoads==='function')updateVillageRoads(dt);
     if(typeof updateRailwayCrossing==='function')updateRailwayCrossing(dt);
+    if(typeof updateFuelAndStations==='function')updateFuelAndStations(dt);
+    if(typeof updateCockpitRealism==='function')updateCockpitRealism();
     updateSceneBudgets(dt);
     if(!window.__deferRender&&G.state!=='cinematic'&&G.state!=='menu')renderer.render(scene, camera);
   } catch(loopErr) {

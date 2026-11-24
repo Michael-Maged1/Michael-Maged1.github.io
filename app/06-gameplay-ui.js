@@ -56,7 +56,7 @@ const G = {
   // شمس الظهيرة المصرية المشرقة مطابقة للصورة المرجعية
   clock: 12 * 60,
   cycle: true,
-  timeRate: .9,
+  timeRate: .6,
   timeSpeed: 2.4,
   weather: store.get('alex_taxi_weather', DEFAULT_SETTINGS.weather) || DEFAULT_SETTINGS.weather,
   dynWeather: true,
@@ -73,6 +73,9 @@ const G = {
   totalEarned: Math.max(0,+store.get('alex_driver_earned','0')||0),
   ratingTotal: Math.max(0,+store.get('alex_driver_rating_total','0')||0),
   ratedTrips: Math.max(0,+store.get('alex_driver_rated','0')||0),
+  fuel: clamp(+store.get('assyut_fuel','100')||100, 15, 100),
+  dailyCleanTrips: 0,
+  dailyBonusClaimed: false,
   camMode: 0,
   menuT: 0,
   hudT: 0,
@@ -236,6 +239,7 @@ function saveProgress() {
   store.set('alex_taxi_paints', JSON.stringify(G.paints));
   store.set('alex_taxi_ach', JSON.stringify(G.achievements));
   store.set('assyut_graphics_quality', G.graphicsQuality || 'balanced');
+  store.set('assyut_fuel', Math.round(G.fuel == null ? 100 : G.fuel));
 }
 
 /* ========================= 72-audio.js ========================= */
@@ -1492,6 +1496,27 @@ function issuePoliceCall(){
   {id:'stolen',label:'ضبط سيارة مسروقة ومحاصرة الجناة',speed:0},
   {id:'checkpoint',label:'اشتباه واستيقاف أمني بالشارع',speed:0}
  ];
+ const isTestEnv=typeof navigator!=='undefined'&&navigator.userAgent==='test';
+ const pursuitCandidate=!isTestEnv&&POLICE.completed>0&&Math.random()<0.45&&typeof traffic!=='undefined'&&traffic.length?traffic.find(t=>t?.mesh&&Math.hypot(t.mesh.position.x-car.x,t.mesh.position.z-car.z)>60):null;
+ if(pursuitCandidate){
+  pursuitCandidate.policeSuspect=true;
+  pursuitCandidate.baseSpeed=Math.max(pursuitCandidate.baseSpeed||14,19);
+  POLICE.suspect=pursuitCandidate;
+  POLICE.call={...stop,stop,count:1,type:'pursuit',label:'مطاردة سيارة هاربة ترفض التوقف'};
+  POLICE.station=station;
+  POLICE.phase='pursuit';
+  POLICE.siren=true;
+  POLICE.hold=0;
+  M.phase='policeScene';
+  pickupMarker.visible=false;
+  destMarker.visible=false;
+  refreshPoliceNavigation();
+  setObjective('🚨 مطاردة جارية · لاحق السيارة الهاربة وحاصرها لإيقافها',5000);
+  sfxPickup();
+  renderPoliceDispatch();
+  updateHUD();
+  return true;
+ }
  const incident=pick(incidents);
  POLICE.call={...stop,stop,count:2,type:incident.id,label:incident.label};
  POLICE.station=station;
@@ -1674,7 +1699,21 @@ function updatePoliceMission(dt){
  if(POLICE.navTimer<=0)refreshPoliceNavigation();
  const distance=Math.hypot(target.x-car.x,target.z-car.z),stopped=Math.hypot(car.vel.x,car.vel.y)<1.2;
 
- if(POLICE.phase==='respond'){
+ if(POLICE.phase==='pursuit'){
+  if(!POLICE.suspect||!POLICE.suspect.mesh){POLICE.phase='respond';}
+  else{
+   POLICE.suspect.speed=Math.max(POLICE.suspect.speed||18,18);
+   if(distance<11){
+    POLICE.hold+=dt;
+    showPrompt(`🚨 جاري محاصرة السيارة الهاربة (${Math.min(100,Math.round((POLICE.hold/1.2)*100))}%)`);
+    if(POLICE.hold>=1.2){POLICE.suspect.speed=0;playPoliceClip('arrest');}
+   }else{
+    POLICE.hold=0;
+    if(distance<35)showPrompt('اقترب من السيارة الهاربة واعترض طريقها لإيقافها');
+    else hidePrompt();
+   }
+  }
+ }else if(POLICE.phase==='respond'){
   if(distance<10&&Math.abs(car.y-navigationStopHeight(target))<2.2&&stopped){
    POLICE.hold+=dt;
    showPrompt(`🚨 جاري تأمين الموقع ونقل المتهمين إلى الدورية (${Math.min(100,Math.round((POLICE.hold/1.0)*100))}%)`);
@@ -1814,12 +1853,21 @@ function completeRideTrip(){
  const d=Math.hypot(car.x-M.destX,car.z-M.destZ);
  if(d>=8.5||Math.abs(car.y-navigationStopHeight({x:M.destX,z:M.destZ,roadIndex:M.destRoad}))>=1||Math.hypot(car.vel.x,car.vel.y)>=1.4)return false;
  const speedPenalty=Math.min(1,(M.speedViolations||0)/18),hitPenalty=(M.hits||0)*.25,comfortPenalty=Math.min(1.2,(M.comfortPenalty||0)/14);
- const pay=Math.round(M.quotedFare*(1-Math.min(.25,comfortPenalty*.08))),rating=clamp(+(5-hitPenalty-speedPenalty-comfortPenalty).toFixed(1),1,5);
- const receipt={id:M.offerId,pay,rating,name:M.riderName,pickup:M.pickupName,dest:M.destName,time:M.tripTime,distance:M.tripDistance,preference:M.preference};
+ let tip=0;
+ if(M.preference==='quiet'&&typeof isMusicPlaying==='function'&&!isMusicPlaying())tip=15;
+ else if(M.preference==='radio'&&typeof isMusicPlaying==='function'&&isMusicPlaying())tip=15;
+ else if(M.preference==='smooth'&&(M.hits||0)===0&&(M.comfortPenalty||0)<2)tip=20;
+ else if(M.preference==='fast'&&M.tripTime>0&&M.tripTime<=Math.max(25,(M.tripDistance||400)/11))tip=25;
+ const pay=Math.round(M.quotedFare*(1-Math.min(.25,comfortPenalty*.08)))+tip,rating=clamp(+(5-hitPenalty-speedPenalty-comfortPenalty).toFixed(1),1,5);
+ const receipt={id:M.offerId,pay,tip,rating,name:M.riderName,pickup:M.pickupName,dest:M.destName,time:M.tripTime,distance:M.tripDistance,preference:M.preference};
  // End the trip before crediting it, so repeated actions cannot pay twice.
  M.phase='none';M.hold=0;M.timer=0;
  G.money+=pay;G.xp+=35;G.trips++;G.totalEarned+=pay;G.ratingTotal+=rating;G.ratedTrips++;
- RIDE.sessionEarned+=pay;RIDE.sessionTrips++;RIDE.navigation=null;RIDE.receipt=receipt;RIDE.receiptLeft=8;RIDE.nextIn=rand(12,22);RIDE.expanded=true;RIDE.notice='اكتملت الرحلة';
+ if((M.hits||0)===0&&rating>=4.5&&!G.dailyBonusClaimed){
+  G.dailyCleanTrips=(G.dailyCleanTrips||0)+1;
+  if(G.dailyCleanTrips>=3){G.dailyBonusClaimed=true;G.money+=300;G.totalEarned+=300;if(typeof floatText==='function')floatText('🏆 تحدي الوردية: 3 رحلات نظيفة (+300 ج.م)','#ffd34d');}
+ }
+ RIDE.sessionEarned+=pay;RIDE.sessionTrips++;RIDE.navigation=null;RIDE.receipt=receipt;RIDE.receiptLeft=8;RIDE.nextIn=rand(12,22);RIDE.expanded=true;RIDE.notice=tip?`اكتملت الرحلة (+${tip} ج.م بقشيش)`:'اكتملت الرحلة';
  passenger.visible=false;pickupMarker.visible=false;destMarker.visible=false;arrow.visible=false;arrowGlow.visible=false;
  hidePrompt();saveProgress();sfxCash();floatText(`+${fmt(pay)} ج.م`,'#8be7b8');
  renderDriverPhone(true);updateHUD();setObjective(`اكتملت الرحلة · أُضيف ${fmt(pay)} ج.م إلى محفظتك`,4000);return true;
@@ -1834,6 +1882,15 @@ function updateDriverShift(dt){
   M.tripTime+=dt;
   if(Math.abs(car.longAccel||0)>5.5||Math.abs(car.lateralAccel||0)>4.8)M.comfortPenalty=(M.comfortPenalty||0)+dt;
   if(Math.abs(car.speed)>20)M.speedViolations=(M.speedViolations||0)+dt;
+  M.reactCooldown=(M.reactCooldown||4)-dt;
+  if((M.hits||0)>(M._lastHits||0)){M._lastHits=M.hits;M.reactCooldown=7;if(typeof floatText==='function')floatText('الراكب: حاسب يا أسطى!','#ff8a8a');}
+  else if(M.reactCooldown<=0){
+   M.reactCooldown=11;
+   const musicOn=typeof isMusicPlaying==='function'&&isMusicPlaying();
+   if(M.preference==='quiet'&&musicOn&&typeof floatText==='function')floatText('الراكب: ممكن نوطي الكاسيت شوية؟','#ffd34d');
+   else if(M.preference==='radio'&&!musicOn&&typeof floatText==='function')floatText('الراكب: شغّلنا الراديو لو سمحت 🎵','#ffd34d');
+   else if(M.tripTime>12&&(M.hits||0)===0&&(M.comfortPenalty||0)<1.5&&typeof floatText==='function')floatText('الراكب: سواقتك هادية ومريحة 👍','#8be7b8');
+  }
  }
  RIDE.navTimer-=dt;if(RIDE.navTimer<=0){RIDE.navTimer=2.5;refreshRideNavigation();}
  const target=M.phase==='toPick'?{x:M.pickupX,z:M.pickupZ}:{x:M.destX,z:M.destZ};
@@ -2508,6 +2565,22 @@ function drawSpeedo() {
   if ($('tBrk')) $('tBrk').classList.toggle('pedalPressed', !!brkActive);
   if ($('tHbk')) $('tHbk').classList.toggle('hbActive', !!hbActive);
 
+  // إشارة الانعطاف على التابلوه وإضاءة الليل
+  const blinkOn = Math.floor(performance.now() / 360) % 2 === 0;
+  const sigL = blinkOn && (car.turnSignal < 0 || car.hazards);
+  const sigR = blinkOn && (car.turnSignal > 0 || car.hazards);
+  if (sigL || sigR) {
+    g.fillStyle = '#3dff8a';
+    g.font = 'bold 14px sans-serif';
+    g.textAlign = 'center';
+    if (sigL) g.fillText('◀', cx - r * 0.55, cy - r * 0.28);
+    if (sigR) g.fillText('▶', cx + r * 0.55, cy - r * 0.28);
+  }
+  const hr = (G.clock / 60) % 24;
+  const isNight = hr >= 18 || hr < 6;
+  const dash = $('dashboardCockpit');
+  if (dash) dash.style.filter = isNight ? 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.28))' : '';
+
   drawRearViewMirror();
 }
 
@@ -2665,6 +2738,11 @@ function updateHUD() {
   $('xp').textContent = fmt(G.xp);
   $('xpfill').style.width = (rk.p * 100).toFixed(1) + '%';
   $('money').textContent = fmt(G.money);
+  if ($('fuelLevel')) {
+    const fPct = Math.round(G.fuel == null ? 100 : G.fuel);
+    $('fuelLevel').textContent = fPct + '%';
+    $('fuelLevel').style.color = fPct <= 20 ? '#ff5a5a' : fPct <= 40 ? '#ffd34d' : '';
+  }
 
   const hh = Math.floor(G.clock / 60) % 24;
   const mm = Math.floor(G.clock % 60);
@@ -4071,11 +4149,26 @@ function drawMinimap() {
     }
   }
 
+  // محطات الوقود
+  if (typeof FUEL_STATIONS !== 'undefined') {
+    for (const fs of FUEL_STATIONS) {
+      const mx = tx(fs.x), mz = tz(fs.z);
+      if (mx < -8 || mx > W + 8 || mz < -8 || mz > H + 8) continue;
+      mmCtx.fillStyle = '#22c55e';
+      mmCtx.beginPath();
+      mmCtx.arc(mx, mz, 4.5, 0, 7);
+      mmCtx.fill();
+      mmCtx.strokeStyle = '#ffffff';
+      mmCtx.lineWidth = 1.2;
+      mmCtx.stroke();
+    }
+  }
+
   // سيارات المرور
   for (const t of traffic) {
-    mmCtx.fillStyle = t.dir > 0 ? '#e2c56a' : '#88a4df';
+    mmCtx.fillStyle = t.policeSuspect ? '#ff3b3b' : (t.dir > 0 ? '#e2c56a' : '#88a4df');
     mmCtx.beginPath();
-    mmCtx.arc(tx(t.mesh.position.x), tz(t.mesh.position.z), 2.2, 0, 7);
+    mmCtx.arc(tx(t.mesh.position.x), tz(t.mesh.position.z), t.policeSuspect ? 3.8 : 2.2, 0, 7);
     mmCtx.fill();
   }
 
@@ -4350,6 +4443,158 @@ function updateCockpitDynamics(dt) {
       drawCockpitScreen(c.screenCtx);
       c.screenTex.needsUpdate = true;
     }
+  }
+}
+
+/* ========================= 91-realism.js ========================= */
+/* =====================================================================
+   واقعية القيادة: محطات البنزين والوقود + مسّاحات المطر + إضاءة التابلوه
+   ===================================================================== */
+const FUEL_STATIONS = [];
+let _fuelLowWarned = false;
+let _refuelSoundCd = 0;
+
+function initFuelStations() {
+  if (typeof ASSYUT === 'undefined' || !ASSYUT.segments || typeof REAL_CITY === 'undefined') return;
+  const targets = [
+    { name: 'محطة وطنية · الكورنيش', color: 0x0f7a44, accent: 0xfacc15, prefX: -320, prefZ: -60 },
+    { name: 'محطة شيل أوت · الجمهورية', color: 0xd92323, accent: 0xfbbf24, prefX: 280, prefZ: 190 },
+  ];
+  for (const spec of targets) {
+    let bestSeg = null, bestD = Infinity;
+    for (const s of ASSYUT.segments) {
+      if (s.width < 9 || s.length < 22 || INFRA?.profiles?.has(s.road)) continue;
+      const mx = (s.a.x + s.b.x) * 0.5, mz = (s.a.z + s.b.z) * 0.5;
+      const d = Math.hypot(mx - spec.prefX, mz - spec.prefZ);
+      if (d < bestD) { bestD = d; bestSeg = s; }
+    }
+    if (!bestSeg) continue;
+    const mx = (bestSeg.a.x + bestSeg.b.x) * 0.5, mz = (bestSeg.a.z + bestSeg.b.z) * 0.5;
+    const nx = -(bestSeg.b.z - bestSeg.a.z) / bestSeg.length, nz = (bestSeg.b.x - bestSeg.a.x) / bestSeg.length;
+    const padX = mx + nx * (bestSeg.width / 2 + 2.8), padZ = mz + nz * (bestSeg.width / 2 + 2.8);
+    const yaw = Math.atan2(-nz, nx) + Math.PI / 2;
+
+    const grp = new THREE.Group();
+    grp.position.set(padX, 0, padZ);
+    grp.rotation.y = yaw;
+
+    // أرضية خرسانية ومنطقة تفويل مضيئة
+    const slab = new THREE.Mesh(
+      new THREE.BoxGeometry(9.5, 0.08, 6.2),
+      new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.9 })
+    );
+    slab.position.y = 0.04;
+    slab.receiveShadow = true;
+    grp.add(slab);
+
+    const padRing = new THREE.Mesh(
+      new THREE.RingGeometry(1.9, 2.35, 24),
+      new THREE.MeshBasicMaterial({ color: 0x22c55e, side: THREE.DoubleSide, transparent: true, opacity: 0.78 })
+    );
+    padRing.rotation.x = -Math.PI / 2;
+    padRing.position.set(0, 0.1, 0.8);
+    grp.add(padRing);
+
+    // مظلة المحطة وأعمدتها
+    const canopyMat = new THREE.MeshStandardMaterial({ color: spec.color, emissive: spec.color, emissiveIntensity: 0.25, roughness: 0.5 });
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.45, 5.6), canopyMat);
+    canopy.position.set(0, 4.3, -0.4);
+    grp.add(canopy);
+
+    const trim = new THREE.Mesh(
+      new THREE.BoxGeometry(9.35, 0.16, 5.75),
+      new THREE.MeshStandardMaterial({ color: spec.accent, emissive: spec.accent, emissiveIntensity: 0.35 })
+    );
+    trim.position.set(0, 4.15, -0.4);
+    grp.add(trim);
+
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.5, metalness: 0.3 });
+    for (const sx of [-3.6, 3.6]) {
+      const pil = new THREE.Mesh(new THREE.BoxGeometry(0.38, 4.1, 0.38), pillarMat);
+      pil.position.set(sx, 2.05, -1.6);
+      grp.add(pil);
+      // طلمبة بنزين
+      const pump = new THREE.Mesh(
+        new THREE.BoxGeometry(0.65, 1.55, 0.45),
+        new THREE.MeshStandardMaterial({ color: spec.accent, roughness: 0.45 })
+      );
+      pump.position.set(sx * 0.45, 0.82, -1.4);
+      grp.add(pump);
+    }
+
+    REAL_CITY.group.add(grp);
+    FUEL_STATIONS.push({ x: padX, z: padZ, name: spec.name, ring: padRing });
+  }
+}
+initFuelStations();
+
+function updateFuelAndStations(dt) {
+  if (typeof G === 'undefined' || G.state !== 'play') return;
+  const isTest = (typeof navigator !== 'undefined' && navigator.userAgent === 'test');
+  if (isTest) return;
+
+  _refuelSoundCd = Math.max(0, _refuelSoundCd - dt);
+  const sp = Math.abs(car.speed || 0);
+  if (sp > 0.5 && G.fuel > 0) {
+    G.fuel = Math.max(0, G.fuel - sp * dt * 0.016);
+  }
+
+  if (G.fuel <= 0) {
+    G.fuel = 0;
+    if (car.speed > 6.5) car.speed = Math.max(6.5, car.speed - 14 * dt);
+    if (!_fuelLowWarned) {
+      _fuelLowWarned = true;
+      if (typeof setObjective === 'function') setObjective('⛽ البنزين خلص! اتجه إلى محطة وطنية أو شيل أوت (على الخريطة)', 5000);
+    }
+  } else if (G.fuel < 18 && !_fuelLowWarned) {
+    _fuelLowWarned = true;
+    if (typeof floatText === 'function') floatText('⛽ البنزين منخفض · مرّ على أقرب محطة', '#facc15');
+  } else if (G.fuel >= 25) {
+    _fuelLowWarned = false;
+  }
+
+  for (const st of FUEL_STATIONS) {
+    if (st.ring) st.ring.material.opacity = 0.45 + 0.35 * Math.sin(performance.now() * 0.005);
+    const d = Math.hypot(car.x - st.x, car.z - st.z);
+    if (d < 8.5 && sp < 3.5 && G.fuel < 99.5) {
+      const add = Math.min(100 - G.fuel, 26 * dt);
+      const cost = Math.ceil(add * 2);
+      if (G.money >= cost) {
+        G.money -= cost;
+        G.fuel = Math.min(100, G.fuel + add);
+      } else if (G.fuel < 35) {
+        G.fuel = Math.min(35, G.fuel + add);
+      }
+      if (typeof showPrompt === 'function') showPrompt(`⛽ تفويل في ${st.name}: ${Math.round(G.fuel)}%`);
+      if (G.fuel >= 99.5 && _refuelSoundCd <= 0) {
+        _refuelSoundCd = 3;
+        if (typeof sfxCash === 'function') sfxCash();
+        if (typeof saveProgress === 'function') saveProgress();
+        if (typeof floatText === 'function') floatText('⛽ تم تفويل السيارة بالكامل!', '#8be7b8');
+      }
+      if (typeof updateHUD === 'function') updateHUD();
+    }
+  }
+}
+
+let _wiperEl = null;
+function updateCockpitRealism() {
+  if (typeof document === 'undefined' || !document.body) return;
+  if (!_wiperEl) {
+    _wiperEl = document.createElement('div');
+    _wiperEl.id = 'cockpitWipers';
+    _wiperEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:12;display:none;overflow:hidden;';
+    _wiperEl.innerHTML = '<div id="wiperBladeL" style="position:absolute;bottom:-18px;left:22%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div><div id="wiperBladeR" style="position:absolute;bottom:-18px;left:56%;width:9px;height:44vh;background:linear-gradient(180deg,rgba(15,23,42,.92),rgba(30,41,59,.95));border-radius:6px;transform-origin:bottom center;box-shadow:0 0 8px rgba(0,0,0,.5)"></div>';
+    document.body.appendChild(_wiperEl);
+  }
+  const active = typeof G !== 'undefined' && G.state === 'play' && G.camMode === 2 && G.weather === 'rain';
+  _wiperEl.style.display = active ? 'block' : 'none';
+  if (active) {
+    const t = performance.now() * 0.0042;
+    const sweep = -48 + (0.5 - 0.5 * Math.cos(t)) * 96;
+    const bl = document.getElementById('wiperBladeL'), br = document.getElementById('wiperBladeR');
+    if (bl) bl.style.transform = `rotate(${sweep.toFixed(1)}deg)`;
+    if (br) br.style.transform = `rotate(${sweep.toFixed(1)}deg)`;
   }
 }
 
@@ -5182,6 +5427,8 @@ function loop() {
     updateArchitectureDetails();
     if(typeof updateVillageRoads==='function')updateVillageRoads(dt);
     if(typeof updateRailwayCrossing==='function')updateRailwayCrossing(dt);
+    if(typeof updateFuelAndStations==='function')updateFuelAndStations(dt);
+    if(typeof updateCockpitRealism==='function')updateCockpitRealism();
     updateSceneBudgets(dt);
     if(!window.__deferRender&&G.state!=='cinematic'&&G.state!=='menu')renderer.render(scene, camera);
   } catch(loopErr) {

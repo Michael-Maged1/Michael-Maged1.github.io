@@ -133,6 +133,22 @@ function drawSpeedo() {
   if ($('tBrk')) $('tBrk').classList.toggle('pedalPressed', !!brkActive);
   if ($('tHbk')) $('tHbk').classList.toggle('hbActive', !!hbActive);
 
+  // إشارة الانعطاف على التابلوه وإضاءة الليل
+  const blinkOn = Math.floor(performance.now() / 360) % 2 === 0;
+  const sigL = blinkOn && (car.turnSignal < 0 || car.hazards);
+  const sigR = blinkOn && (car.turnSignal > 0 || car.hazards);
+  if (sigL || sigR) {
+    g.fillStyle = '#3dff8a';
+    g.font = 'bold 14px sans-serif';
+    g.textAlign = 'center';
+    if (sigL) g.fillText('◀', cx - r * 0.55, cy - r * 0.28);
+    if (sigR) g.fillText('▶', cx + r * 0.55, cy - r * 0.28);
+  }
+  const hr = (G.clock / 60) % 24;
+  const isNight = hr >= 18 || hr < 6;
+  const dash = $('dashboardCockpit');
+  if (dash) dash.style.filter = isNight ? 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.28))' : '';
+
   drawRearViewMirror();
 }
 
@@ -290,6 +306,11 @@ function updateHUD() {
   $('xp').textContent = fmt(G.xp);
   $('xpfill').style.width = (rk.p * 100).toFixed(1) + '%';
   $('money').textContent = fmt(G.money);
+  if ($('fuelLevel')) {
+    const fPct = Math.round(G.fuel == null ? 100 : G.fuel);
+    $('fuelLevel').textContent = fPct + '%';
+    $('fuelLevel').style.color = fPct <= 20 ? '#ff5a5a' : fPct <= 40 ? '#ffd34d' : '';
+  }
 
   const hh = Math.floor(G.clock / 60) % 24;
   const mm = Math.floor(G.clock % 60);
