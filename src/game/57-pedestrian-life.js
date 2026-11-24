@@ -120,15 +120,28 @@ function updateAssyutPeds(dt){
    if(p.knockTimer>0){
     p.knockTimer-=dt;
     p.mesh.position.x+=(p.knockVelX||0)*dt;p.mesh.position.z+=(p.knockVelZ||0)*dt;
-    p.knockVelY=(p.knockVelY||0)-14*dt;
+    p.knockVelY=(p.knockVelY||0)-15*dt;
     p.knockH=(p.knockH||0)+p.knockVelY*dt;
     const rh=assyutRoadHeightAt(p.mesh.position.x,p.mesh.position.z);
     const groundH=(rh>0&&rh<0.4)?rh:0;
-    if(p.knockH<=0){p.knockH=0;if(p.knockVelY<-1.5)p.knockVelY=-p.knockVelY*0.25;else p.knockVelY=0;p.knockVelX*=Math.exp(-dt*7.5);p.knockVelZ*=Math.exp(-dt*7.5);}
-    else{p.knockVelX*=Math.exp(-dt*1.8);p.knockVelZ*=Math.exp(-dt*1.8);}
-    p.mesh.rotation.x=p.knockTimer>0.5?1.38:lerp(p.mesh.rotation.x,0,1-Math.exp(-dt*6));
-    p.mesh.rotation.z=p.knockTimer>0.5?(p.knockRoll||0.35):lerp(p.mesh.rotation.z,0,1-Math.exp(-dt*6));
-    p.mesh.position.y=groundH+p.knockH+(p.knockTimer>0.5?0.20:0.18);
+    if(p.knockH<=0){p.knockH=0;if(p.knockVelY<-1.5)p.knockVelY=-p.knockVelY*0.18;else p.knockVelY=0;p.knockVelX*=Math.exp(-dt*7.5);p.knockVelZ*=Math.exp(-dt*7.5);p.knockSpin=(p.knockSpin||0)*Math.exp(-dt*8);}
+    else{p.knockVelX*=Math.exp(-dt*1.8);p.knockVelZ*=Math.exp(-dt*1.8);p.mesh.rotation.y+=(p.knockSpin||0)*dt;}
+    const down=p.knockTimer>0.65;
+    p.mesh.rotation.x=lerp(p.mesh.rotation.x,down?(p.knockPitchDir||1.46):0,1-Math.exp(-dt*(down?9.5:6)));
+    p.mesh.rotation.z=lerp(p.mesh.rotation.z,down?(p.knockRoll||0.28):0,1-Math.exp(-dt*(down?8:6)));
+    const rig=p.mesh.userData.walk;
+    if(rig){
+     const blend=1-Math.exp(-dt*(down?10:7));
+     rig.arms[0].rotation.x=lerp(rig.arms[0].rotation.x,down?-1.15:0,blend);
+     rig.arms[1].rotation.x=lerp(rig.arms[1].rotation.x,down?-0.75:0,blend);
+     rig.arms[0].rotation.z=lerp(rig.arms[0].rotation.z,down?0.48:0.08,blend);
+     rig.arms[1].rotation.z=lerp(rig.arms[1].rotation.z,down?-0.42:-0.08,blend);
+     rig.legs[0].rotation.x=lerp(rig.legs[0].rotation.x,down?-0.42:0,blend);
+     rig.legs[1].rotation.x=lerp(rig.legs[1].rotation.x,down?0.18:0,blend);
+     rig.knees[0].rotation.x=lerp(rig.knees[0].rotation.x,down?0.78:0,blend);
+     rig.knees[1].rotation.x=lerp(rig.knees[1].rotation.x,down?1.05:0,blend);
+    }
+    p.mesh.position.y=groundH+p.knockH+(down?0.16:0.18);
     continue;
    }
    const near=Math.hypot(p.mesh.position.x-car.x,p.mesh.position.z-car.z);
@@ -137,13 +150,15 @@ function updateAssyutPeds(dt){
     const awayX=p.mesh.position.x-car.x,awayZ=p.mesh.position.z-car.z,n=Math.max(.01,Math.hypot(awayX,awayZ));
     const spd=Math.abs(car.speed);
     const carDirX=spd>0.5?car.vel.x/spd:awayX/n,carDirZ=spd>0.5?car.vel.y/spd:awayZ/n;
-    const push=clamp(spd*1.25,5.5,19.0);
-    p.knockTimer=3.0;
+    const push=clamp(spd*0.85,3.8,12.5);
+    p.knockTimer=2.8;
     p.knockVelX=(carDirX*0.72+(awayX/n)*0.28)*push;
     p.knockVelZ=(carDirZ*0.72+(awayZ/n)*0.28)*push;
-    p.knockVelY=clamp(spd*0.34,2.8,6.8);
-    p.knockH=0.06;
-    p.knockRoll=(Math.random()>.5?1:-1)*0.55;
+    p.knockVelY=clamp(spd*0.16,0.9,2.8);
+    p.knockH=0.04;
+    p.knockPitchDir=Math.random()>0.35?1.46:-1.40;
+    p.knockRoll=(Math.random()>.5?1:-1)*0.32;
+    p.knockSpin=(Math.random()-0.5)*3.4;
     p.mesh.position.x+=carDirX*0.65+(awayX/n)*0.35;p.mesh.position.z+=carDirZ*0.65+(awayZ/n)*0.35;
     car.vel.x*=0.98;car.vel.y*=0.98;if(typeof syncCarSpeed==='function')syncCarSpeed();
     car.shake=Math.max(car.shake||0,clamp(spd*0.035,0.28,0.65));
