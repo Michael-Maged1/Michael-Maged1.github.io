@@ -26,7 +26,7 @@ function loop() {
     // صوت الموتور والبيئة مع محاكاة 5 سرعات ناقل حركة
     if (engGain && AC) {
       const sp = Math.abs(car.speed);
-      const on = G.sound && G.state === 'play';
+      const on = G.sound && G.state === 'play' && !window.__deferAudio;
       const c = CARS[G.carIdx] || CARS[0];
       const maxSp = Math.max(15, typeof MAXSPEED !== 'undefined' ? MAXSPEED : 45);
       const ratio = clamp(sp / maxSp, 0, 1.15);
@@ -71,7 +71,7 @@ function loop() {
       }
     }
 
-    updateEmergencyAudio();syncRecordedRadio();
+    if (!window.__deferAudio) { updateEmergencyAudio(); syncRecordedRadio(); }
     updateCamera(dt);
     updateMarkers(dt);
 

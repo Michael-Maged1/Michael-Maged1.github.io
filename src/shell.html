@@ -174,15 +174,17 @@
 
 <!-- ================= LAUNCH TRANSITION OVERLAY ================= -->
 <div id="launchTransition" class="hidden" aria-live="polite">
+  <div class="launchBackdrop" aria-hidden="true"></div>
   <div class="launchVignette"></div>
   <div class="launchCard">
-    <div class="launchSpinner">
-      <div class="launchPulse"></div>
-      <span class="launchIcon" id="launchTransIcon">🚗</span>
+    <div class="launchBrand"><i></i> ASSIUT <strong>DRIVE</strong></div>
+    <div class="launchVehicleWrap">
+      <img id="launchTransImg" class="launchVehicleImg" src="asset:menu-qashqai" alt="السيارة المختارة">
+      <span class="launchIcon hidden" id="launchTransIcon">🚗</span>
     </div>
     <div class="launchMeta">
       <strong id="launchTransTitle">جارٍ تجهيز الوردية والانطلاق…</strong>
-      <p id="launchTransTip">تهيئة المحرك ومعالجة الرسوميات لشوارع أسيوط السلسة</p>
+      <p id="launchTransTip">تهيئة المحرك ومعالجة الرسوميات لشوارع أسيوط</p>
     </div>
     <div class="launchTrack"><div id="launchBarFill"></div></div>
     <div class="launchFooter">

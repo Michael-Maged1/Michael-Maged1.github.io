@@ -9,8 +9,8 @@
 <meta name="google-adsense-account" content="ca-pub-1820524955775833">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1820524955775833" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Chakra+Petch:wght@500;600;700&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="app/hud.css?v=1795550128933">
-<link rel="stylesheet" href="app/menu.css?v=1795550128933">
+<link rel="stylesheet" href="app/hud.css?v=1795550704151">
+<link rel="stylesheet" href="app/menu.css?v=1795550704151">
 </head>
 <body>
 
@@ -175,15 +175,17 @@
 
 <!-- ================= LAUNCH TRANSITION OVERLAY ================= -->
 <div id="launchTransition" class="hidden" aria-live="polite">
+  <div class="launchBackdrop" aria-hidden="true"></div>
   <div class="launchVignette"></div>
   <div class="launchCard">
-    <div class="launchSpinner">
-      <div class="launchPulse"></div>
-      <span class="launchIcon" id="launchTransIcon">🚗</span>
+    <div class="launchBrand"><i></i> ASSIUT <strong>DRIVE</strong></div>
+    <div class="launchVehicleWrap">
+      <img id="launchTransImg" class="launchVehicleImg" src="assets/ui/qashqai.webp" alt="السيارة المختارة">
+      <span class="launchIcon hidden" id="launchTransIcon">🚗</span>
     </div>
     <div class="launchMeta">
       <strong id="launchTransTitle">جارٍ تجهيز الوردية والانطلاق…</strong>
-      <p id="launchTransTip">تهيئة المحرك ومعالجة الرسوميات لشوارع أسيوط السلسة</p>
+      <p id="launchTransTip">تهيئة المحرك ومعالجة الرسوميات لشوارع أسيوط</p>
     </div>
     <div class="launchTrack"><div id="launchBarFill"></div></div>
     <div class="launchFooter">
@@ -289,6 +291,6 @@
 </div>
 
 <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
-<script type="module" src="app/boot.js?v=1795550128933"></script>
+<script type="module" src="app/boot.js?v=1795550704151"></script>
 </body>
 </html>

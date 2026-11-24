@@ -18,21 +18,26 @@ function renderPatrolVehicles(){
 }
 
 async function runWithLaunchTransition(mode, carAsset, title, tip, icon='🚗'){
- const trans=$('launchTransition'),bar=$('launchBarFill'),pct=$('launchTransPct'),titleEl=$('launchTransTitle'),tipEl=$('launchTransTip'),iconEl=$('launchTransIcon'),statusEl=$('launchTransStatus');
+ const trans=$('launchTransition'),bar=$('launchBarFill'),pct=$('launchTransPct'),titleEl=$('launchTransTitle'),tipEl=$('launchTransTip'),iconEl=$('launchTransIcon'),imgEl=$('launchTransImg'),statusEl=$('launchTransStatus');
  if(titleEl&&title)titleEl.textContent=title;
  if(tipEl&&tip)tipEl.textContent=tip;
  if(iconEl&&icon)iconEl.textContent=icon;
+ if(imgEl){
+  const thumb=(typeof MENU_CAR_IMAGES!=='undefined'&&MENU_CAR_IMAGES[carAsset])||(typeof CAR_THUMBS!=='undefined'&&(CAR_THUMBS[carAsset]||CAR_THUMBS.qashqai))||'';
+  if(thumb){imgEl.src=thumb;imgEl.classList.remove('hidden');iconEl?.classList.add('hidden');}
+  else{imgEl.classList.add('hidden');iconEl?.classList.remove('hidden');}
+ }
  if(statusEl)statusEl.textContent='تجهيز المحرك والمسارات…';
  if(bar)bar.style.width='20%';
  if(pct)pct.textContent='20%';
  if(trans)trans.classList.remove('hidden','fadeOut');
 
+ const waitFrame=()=>typeof requestAnimationFrame==='function'?new Promise(r=>requestAnimationFrame(r)):new Promise(r=>setTimeout(r,16));
  const update=async(p,txt)=>{
   if(bar)bar.style.width=p+'%';
   if(pct)pct.textContent=p+'%';
   if(statusEl&&txt)statusEl.textContent=txt;
-  if(typeof requestAnimationFrame==='function')await new Promise(r=>requestAnimationFrame(r));
-  else await new Promise(r=>setTimeout(r,16));
+  await waitFrame();
  };
 
  try{
@@ -41,21 +46,34 @@ async function runWithLaunchTransition(mode, carAsset, title, tip, icon='🚗'){
    try{await ensureVehicleModel(carAsset);}catch(err){console.warn('Vehicle model fallback:',err);}
   }
   await update(75,'تهيئة رسوميات شوارع أسيوط…');
-  if(typeof requestAnimationFrame==='function')await new Promise(r=>requestAnimationFrame(r));
-  else await new Promise(r=>setTimeout(r,16));
+  await waitFrame();
   await update(100,'انطلاق الوردية!');
-  await new Promise(r=>setTimeout(r,140));
 
+  // تأجيل الصوت حتى يكتمل رسم أول إطار مرئي للعبة على الشاشة
+  window.__deferAudio=true;
   startRun(mode);
-  initAudio();
+  if(typeof updateCamera==='function')updateCamera(0);
+  if(typeof updateDayNight==='function')updateDayNight(0);
+  if(typeof updateSceneBudgets==='function')updateSceneBudgets(1);
+  if(typeof renderer!=='undefined'&&typeof scene!=='undefined'&&typeof camera!=='undefined'){
+   try{renderer.render(scene,camera);}catch(_){}
+  }
+  await waitFrame();
+  await waitFrame();
 
   if(trans){
    trans.classList.add('fadeOut');
-   setTimeout(()=>{trans.classList.add('hidden');trans.classList.remove('fadeOut');},480);
+   await new Promise(r=>setTimeout(r,260));
+   trans.classList.add('hidden');trans.classList.remove('fadeOut');
   }
+  window.__deferAudio=false;
+  initAudio();
+  if(typeof syncCityAmbience==='function')syncCityAmbience();
+  if(typeof syncRecordedRadio==='function')syncRecordedRadio();
   return true;
  }catch(e){
   console.error('Launch error:',e);
+  window.__deferAudio=false;
   startRun(mode);
   initAudio();
   if(trans)trans.classList.add('hidden');

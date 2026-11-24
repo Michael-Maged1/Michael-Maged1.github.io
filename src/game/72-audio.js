@@ -36,7 +36,7 @@ function noiseBurst(dur = 0.14, freq = 900, q = 1.2, vol = 0.14, type = 'bandpas
 
 function syncCityAmbience() {
   if (!cityAmbience) return;
-  const on = !!G.sound && G.state === 'play';
+  const on = !!G.sound && G.state === 'play' && !window.__deferAudio;
   cityAmbience.volume = on ? .12 : 0;
   if (on) cityAmbience.play().catch(() => {});
   else cityAmbience.pause();
