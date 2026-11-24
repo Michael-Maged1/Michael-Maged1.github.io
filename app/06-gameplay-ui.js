@@ -3954,11 +3954,15 @@ function updateMarkers(dt) {
   dRing.rotation.z -= dt * .6;
 
   let target = null, arrowGuide = null;
-  const color = 0x3dff8a;
+  let color = 0x3dff8a;
   if(G.mode==='police')target=policeTarget();
   else if(M.phase==='toPick')target=pickupMarker.position;
   else if (M.phase === 'toDest' || M.phase === 'race') target = destMarker.position;
   if((G.mode==='rides'||G.mode==='police')&&target)arrowGuide=navigationArrowGuide();
+  if((!target || G.fuel <= 5) && G.fuel < 25 && typeof nearestFuelStation === 'function'){
+    const fs = nearestFuelStation();
+    if(fs){ target = fs; arrowGuide = null; color = 0xfacc15; }
+  }
 
   if (target) {
     const wasVisible = arrow.visible;
@@ -4205,6 +4209,10 @@ function drawMinimap() {
   if (G.mode === 'police') { const p = policeTarget(); if (p) tgt = p; col = '#61b8ff'; }
   else if (M.phase === 'toPick') { tgt = pickupMarker.position; col = '#ffc61a'; }
   else if (M.phase === 'toDest' || M.phase === 'race') { tgt = destMarker.position; col = '#2ecc71'; }
+  if ((!tgt || G.fuel <= 5) && G.fuel < 25 && typeof nearestFuelStation === 'function') {
+    const fs = nearestFuelStation();
+    if (fs) { tgt = fs; col = '#facc15'; }
+  }
 
   if (tgt) {
     let px = tx(tgt.x), pz = tz(tgt.z);
@@ -4473,25 +4481,56 @@ const FUEL_STATIONS = [];
 let _fuelLowWarned = false;
 let _refuelSoundCd = 0;
 
+function nearestFuelStation() {
+  if (!FUEL_STATIONS.length || typeof car === 'undefined') return null;
+  let best = null, bestD = Infinity;
+  for (const st of FUEL_STATIONS) {
+    const d = Math.hypot(st.x - car.x, st.z - car.z);
+    if (d < bestD) { bestD = d; best = st; }
+  }
+  return best;
+}
+
 function initFuelStations() {
   if (typeof ASSYUT === 'undefined' || !ASSYUT.segments || typeof REAL_CITY === 'undefined') return;
+  const sx = ASSYUT.start?.x || 0, sz = ASSYUT.start?.z || 0;
   const targets = [
-    { name: 'محطة وطنية · الكورنيش', color: 0x0f7a44, accent: 0xfacc15, prefX: -320, prefZ: -60 },
-    { name: 'محطة شيل أوت · الجمهورية', color: 0xd92323, accent: 0xfbbf24, prefX: 280, prefZ: 190 },
+    { name: 'محطة وطنية · وسط البلد', color: 0x0f7a44, accent: 0xfacc15, prefX: sx + 85, prefZ: sz - 65 },
+    { name: 'محطة شيل أوت · الجمهورية', color: 0xd92323, accent: 0xfbbf24, prefX: sx + 280, prefZ: sz + 190 },
+    { name: 'محطة توتال · الكورنيش', color: 0x1d4ed8, accent: 0xf97316, prefX: sx - 280, prefZ: sz - 80 },
+    { name: 'محطة موبيل · الجامعة', color: 0x0369a1, accent: 0xef4444, prefX: sx - 120, prefZ: sz + 260 },
   ];
   for (const spec of targets) {
     let bestSeg = null, bestD = Infinity;
     for (const s of ASSYUT.segments) {
-      if (s.width < 9 || s.length < 22 || INFRA?.profiles?.has(s.road)) continue;
+      if (s.width < 8.5 || s.length < 22 || INFRA?.profiles?.has(s.road)) continue;
       const mx = (s.a.x + s.b.x) * 0.5, mz = (s.a.z + s.b.z) * 0.5;
+      if (FUEL_STATIONS.some(f => Math.hypot(f.x - mx, f.z - mz) < 120)) continue;
       const d = Math.hypot(mx - spec.prefX, mz - spec.prefZ);
       if (d < bestD) { bestD = d; bestSeg = s; }
     }
     if (!bestSeg) continue;
     const mx = (bestSeg.a.x + bestSeg.b.x) * 0.5, mz = (bestSeg.a.z + bestSeg.b.z) * 0.5;
     const nx = -(bestSeg.b.z - bestSeg.a.z) / bestSeg.length, nz = (bestSeg.b.x - bestSeg.a.x) / bestSeg.length;
-    const padX = mx + nx * (bestSeg.width / 2 + 2.8), padZ = mz + nz * (bestSeg.width / 2 + 2.8);
+    const padX = mx + nx * (bestSeg.width / 2 + 3.4), padZ = mz + nz * (bestSeg.width / 2 + 3.4);
     const yaw = Math.atan2(-nz, nx) + Math.PI / 2;
+
+    // إزالة أي مبنى متداخل مع ساحة البنزينة لتظهر بوضوح من الشارع
+    if (Array.isArray(REAL_CITY.buildings)) {
+      for (let j = REAL_CITY.buildings.length - 1; j >= 0; j--) {
+        const b = REAL_CITY.buildings[j];
+        if (Math.abs(b.x - padX) < b.w / 2 + 7 && Math.abs(b.z - padZ) < b.d / 2 + 7) {
+          REAL_CITY.group.remove(b.mesh);
+          REAL_CITY.buildings.splice(j, 1);
+          if (typeof MAP !== 'undefined' && Array.isArray(MAP.buildings)) {
+            for (let k = MAP.buildings.length - 1; k >= 0; k--) {
+              const m = MAP.buildings[k];
+              if (Math.abs((m.x0 + m.x1) / 2 - b.x) < 0.2 && Math.abs((m.z0 + m.z1) / 2 - b.z) < 0.2) MAP.buildings.splice(k, 1);
+            }
+          }
+        }
+      }
+    }
 
     const grp = new THREE.Group();
     grp.position.set(padX, 0, padZ);
@@ -4499,33 +4538,51 @@ function initFuelStations() {
 
     // أرضية خرسانية ومنطقة تفويل مضيئة
     const slab = new THREE.Mesh(
-      new THREE.BoxGeometry(9.5, 0.08, 6.2),
+      new THREE.BoxGeometry(10.5, 0.1, 7.2),
       new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.9 })
     );
-    slab.position.y = 0.04;
+    slab.position.y = 0.05;
     slab.receiveShadow = true;
     grp.add(slab);
 
     const padRing = new THREE.Mesh(
-      new THREE.RingGeometry(1.9, 2.35, 24),
-      new THREE.MeshBasicMaterial({ color: 0x22c55e, side: THREE.DoubleSide, transparent: true, opacity: 0.78 })
+      new THREE.RingGeometry(2.1, 2.75, 24),
+      new THREE.MeshBasicMaterial({ color: 0x22c55e, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
     );
     padRing.rotation.x = -Math.PI / 2;
-    padRing.position.set(0, 0.1, 0.8);
+    padRing.position.set(0, 0.12, 1.0);
     grp.add(padRing);
 
-    // مظلة المحطة وأعمدتها
-    const canopyMat = new THREE.MeshStandardMaterial({ color: spec.color, emissive: spec.color, emissiveIntensity: 0.25, roughness: 0.5 });
-    const canopy = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.45, 5.6), canopyMat);
-    canopy.position.set(0, 4.3, -0.4);
+    // مظلة المحطة وأعمدتها ولافتة واضحة
+    const canopyMat = new THREE.MeshStandardMaterial({ color: spec.color, emissive: spec.color, emissiveIntensity: 0.35, roughness: 0.45 });
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.55, 6.2), canopyMat);
+    canopy.position.set(0, 4.5, -0.4);
     grp.add(canopy);
 
     const trim = new THREE.Mesh(
-      new THREE.BoxGeometry(9.35, 0.16, 5.75),
-      new THREE.MeshStandardMaterial({ color: spec.accent, emissive: spec.accent, emissiveIntensity: 0.35 })
+      new THREE.BoxGeometry(10.4, 0.2, 6.4),
+      new THREE.MeshStandardMaterial({ color: spec.accent, emissive: spec.accent, emissiveIntensity: 0.55 })
     );
-    trim.position.set(0, 4.15, -0.4);
+    trim.position.set(0, 4.3, -0.4);
     grp.add(trim);
+
+    if (typeof canvasTex === 'function') {
+      const signTex = canvasTex(256, 64, g => {
+        g.fillStyle = '#0f172a';
+        g.fillRect(0, 0, 256, 64);
+        g.strokeStyle = '#facc15';
+        g.lineWidth = 4;
+        g.strokeRect(3, 3, 250, 58);
+        g.fillStyle = '#ffffff';
+        g.font = 'bold 24px Tahoma, Arial, sans-serif';
+        g.textAlign = 'center';
+        g.fillText('⛽ ' + spec.name.split('·')[0].trim(), 128, 42);
+      });
+      const signFace = new THREE.MeshBasicMaterial({ map: signTex });
+      const signMesh = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.15, 0.2), signFace);
+      signMesh.position.set(0, 5.45, 2.65);
+      grp.add(signMesh);
+    }
 
     const pillarMat = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, roughness: 0.5, metalness: 0.3 });
     for (const sx of [-3.6, 3.6]) {
@@ -4575,7 +4632,7 @@ function updateFuelAndStations(dt) {
   for (const st of FUEL_STATIONS) {
     if (st.ring) st.ring.material.opacity = 0.45 + 0.35 * Math.sin(performance.now() * 0.005);
     const d = Math.hypot(car.x - st.x, car.z - st.z);
-    if (d < 8.5 && sp < 3.5 && G.fuel < 99.5) {
+    if (d < 9.5 && sp < 4.5 && G.fuel < 99.5) {
       const add = Math.min(100 - G.fuel, 26 * dt);
       const cost = Math.ceil(add * 2);
       if (G.money >= cost) {

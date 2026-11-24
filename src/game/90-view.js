@@ -32,11 +32,15 @@ function updateMarkers(dt) {
   dRing.rotation.z -= dt * .6;
 
   let target = null, arrowGuide = null;
-  const color = 0x3dff8a;
+  let color = 0x3dff8a;
   if(G.mode==='police')target=policeTarget();
   else if(M.phase==='toPick')target=pickupMarker.position;
   else if (M.phase === 'toDest' || M.phase === 'race') target = destMarker.position;
   if((G.mode==='rides'||G.mode==='police')&&target)arrowGuide=navigationArrowGuide();
+  if((!target || G.fuel <= 5) && G.fuel < 25 && typeof nearestFuelStation === 'function'){
+    const fs = nearestFuelStation();
+    if(fs){ target = fs; arrowGuide = null; color = 0xfacc15; }
+  }
 
   if (target) {
     const wasVisible = arrow.visible;
@@ -283,6 +287,10 @@ function drawMinimap() {
   if (G.mode === 'police') { const p = policeTarget(); if (p) tgt = p; col = '#61b8ff'; }
   else if (M.phase === 'toPick') { tgt = pickupMarker.position; col = '#ffc61a'; }
   else if (M.phase === 'toDest' || M.phase === 'race') { tgt = destMarker.position; col = '#2ecc71'; }
+  if ((!tgt || G.fuel <= 5) && G.fuel < 25 && typeof nearestFuelStation === 'function') {
+    const fs = nearestFuelStation();
+    if (fs) { tgt = fs; col = '#facc15'; }
+  }
 
   if (tgt) {
     let px = tx(tgt.x), pz = tz(tgt.z);
