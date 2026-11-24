@@ -76,23 +76,23 @@ canvas{display:block}
 /* ================= TOP CONTROLS & TELEMETRY DECK ================= */
 #hudDeck{
   position:absolute;
-  top:calc(env(safe-area-inset-top, 0px) + 12px);
-  right:calc(env(safe-area-inset-right, 0px) + 14px);
+  top:calc(env(safe-area-inset-top, 0px) + 10px);
+  right:calc(env(safe-area-inset-right, 0px) + 12px);
   left:auto;
-  width:auto;
-  min-width:250px;
-  max-width:320px;
+  width:248px;
+  min-width:230px;
+  max-width:270px;
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:5px;
   pointer-events:auto;
   z-index:18;
 }
 #brand{
   background:linear-gradient(145deg,rgba(8,18,36,.88),rgba(3,8,18,.94));
   border:1px solid rgba(0,240,255,.28);
-  border-radius:14px;
-  padding:10px 14px;
+  border-radius:12px;
+  padding:8px 11px;
   backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
   box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 16px rgba(0,240,255,.08);
@@ -191,14 +191,15 @@ canvas{display:block}
 
 .brandStats{
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:8px;
-  padding-top:6px;
+  flex-direction:column;
+  align-items:stretch;
+  gap:5px;
+  margin-top:6px;
+  padding-top:5px;
   border-top:1px solid rgba(255,255,255,.08);
 }
 #brand .wallet{
-  font-size:13px;
+  font-size:12px;
   font-weight:800;
   color:var(--neo-gold);
   direction:ltr;
@@ -206,27 +207,31 @@ canvas{display:block}
   display:flex;
   align-items:baseline;
   gap:4px;
+  white-space:nowrap;
   font-family:'Chakra Petch',sans-serif;
 }
-#brand .wallet b{font-size:17px;font-weight:900;color:#fff;text-shadow:0 0 10px var(--neo-gold-glow)}
+#brand .wallet b{font-size:16px;font-weight:900;color:#fff;text-shadow:0 0 10px var(--neo-gold-glow)}
 #brand .wallet span{font-size:9px;color:var(--neo-muted);font-weight:600;font-family:'Cairo',sans-serif}
 .driverMetrics{
   display:flex;
-  gap:6px;
-  font-size:9px;
+  gap:4px;
+  font-size:8.5px;
   color:var(--neo-muted);
   align-items:center;
+  justify-content:space-between;
+  flex-wrap:nowrap;
 }
 .driverMetrics span{
   display:flex;
   align-items:center;
-  gap:3px;
+  gap:2px;
+  white-space:nowrap;
   background:rgba(255,255,255,.04);
   padding:2px 5px;
   border-radius:5px;
   border:1px solid rgba(0,240,255,.1);
 }
-.driverMetrics b{color:#fff;font-family:'Chakra Petch',sans-serif;font-size:10px;font-weight:700}
+.driverMetrics b{color:#fff;font-family:'Chakra Petch',sans-serif;font-size:9.5px;font-weight:700}
 
 /* ================= CAMERA SWITCHER ================= */
 #camBar{
@@ -450,8 +455,8 @@ canvas{display:block}
 /* ================= TOP SPEEDO INSTRUMENT CLUSTER ================= */
 #topSpeedoCluster{
   position:absolute;
-  bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);
-  right:calc(env(safe-area-inset-right, 0px) + 20px);
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 14px);
+  right:calc(env(safe-area-inset-right, 0px) + 200px);
   top:auto;
   left:auto;
   transform:none;
@@ -713,15 +718,15 @@ canvas{display:block}
 /* ================= 2070 DRIVER PHONE (RIGHT, ABOVE PEDALS) ================= */
 #driverPhone{
   position:fixed;
-  right:calc(env(safe-area-inset-right, 0px) + 18px);
-  bottom:calc(env(safe-area-inset-bottom, 0px) + 195px);
-  width:255px;
-  max-height:calc(100dvh - 345px);
-  min-height:170px;
+  right:calc(env(safe-area-inset-right, 0px) + 12px);
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 150px);
+  width:224px;
+  max-height:calc(100dvh - 330px);
+  min-height:150px;
   background:linear-gradient(180deg,#fcfdfd 0%,#f0f4f2 100%);
-  border:5px solid #0d1824;
-  border-radius:26px;
-  box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 2px rgba(0,240,255,.4),0 0 25px rgba(0,240,255,.2);
+  border:4px solid #0d1824;
+  border-radius:20px;
+  box-shadow:0 16px 45px rgba(0,0,0,.65),0 0 0 1.5px rgba(0,240,255,.38),0 0 18px rgba(0,240,255,.18);
   color:#0f1d24;
   z-index:50;
   direction:rtl;
@@ -763,12 +768,12 @@ canvas{display:block}
   border-radius:5px;padding:2px 6px;font-family:'Chakra Petch',sans-serif;font-weight:800;font-size:9.5px;
 }
 .quoteAmount{
-  font-family:'Orbitron',sans-serif;font-weight:900;font-size:26px;line-height:1.1;
-  margin-top:4px;color:#092230;
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:21px;line-height:1.1;
+  margin-top:2px;color:#092230;
 }
-.quoteAmount small{font-family:'Cairo',sans-serif;font-size:11px;color:#5a7182;font-weight:700}
-.quoteNote{font-size:9px;color:#6b8292;margin:2px 0 6px}
-#ridePhoneMap{width:100%;height:auto;max-height:80px;border-radius:8px;border:1px solid #c8d8df;background:#e7f0f4}
+.quoteAmount small{font-family:'Cairo',sans-serif;font-size:10px;color:#5a7182;font-weight:700}
+.quoteNote{font-size:8.5px;color:#6b8292;margin:2px 0 5px}
+#ridePhoneMap{width:100%;height:auto;max-height:64px;border-radius:8px;border:1px solid #c8d8df;background:#e7f0f4}
 .rideStops{margin:6px 0}
 .rideStops>div{display:flex;align-items:center;gap:8px;margin:5px 0;min-width:0}
 .rideStops small{display:block;font-size:8.5px;color:#6d8393}
@@ -1728,6 +1733,8 @@ body:not(.playing) #touch {
 
 /* Touch Device Overrides */
 body.touch #camBar { display: none; }
+body.touch #topSpeedoCluster { right: calc(env(safe-area-inset-right, 0px) + 215px); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
+body.touch #driverPhone { bottom: calc(env(safe-area-inset-bottom, 0px) + 158px); max-height: calc(100dvh - 305px); }
 
 /* Mobile Landscape (Height <= 520px) */
 @media (max-height: 520px) {
@@ -1743,7 +1750,7 @@ body.touch #camBar { display: none; }
   #hudNav { top: calc(env(safe-area-inset-top, 0px) + 62px); padding: 3px 10px; font-size: 10px; }
   #clock b { font-size: 11px; }
   #zoneBadge { font-size: 9px; }
-  #topSpeedoCluster { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); top: auto; left: auto; transform: scale(0.85); transform-origin: bottom right; }
+  #topSpeedoCluster { bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 190px); top: auto; left: auto; transform: scale(0.85); transform-origin: bottom right; }
   #mission {
     top: calc(env(safe-area-inset-top, 0px) + 110px);
     left: calc(env(safe-area-inset-left, 0px) + 8px);
