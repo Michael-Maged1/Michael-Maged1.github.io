@@ -38,12 +38,12 @@ function syncCityAmbience() {
   if (!cityAmbience) return;
   const on = !!G.sound && G.state === 'play' && !window.__deferAudio;
   cityAmbience.volume = on ? .12 : 0;
-  if (on) cityAmbience.play().catch(() => {});
+  if (on) cityAmbience.play().catch(() => { });
   else cityAmbience.pause();
 }
 
 function initAudio() {
-  if (AC) { try { AC.resume(); } catch (_) {} return; }
+  if (AC) { try { AC.resume(); } catch (_) { } return; }
   const AudioCtx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
   if (!AudioCtx) return;
   try {
@@ -57,7 +57,7 @@ function initAudio() {
         cityAmbience.loop = true;
         cityAmbience.preload = 'auto';
         syncCityAmbience();
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // محرك احتراق داخلي متعدد التوافقات + صوت عادم دافئ

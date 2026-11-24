@@ -72,6 +72,7 @@ function loop() {
     }
 
     if (!window.__deferAudio) { updateEmergencyAudio(); syncRecordedRadio(); }
+    if (G.state === 'pause') return;
     updateCamera(dt);
     updateMarkers(dt);
 

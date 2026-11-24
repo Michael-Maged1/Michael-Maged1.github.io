@@ -829,46 +829,52 @@ function spawnWaitingWhiteHiace() {
 // ---------------------------------------------------------------------
 // 7. محاكاة الصوت الفيزيائي لجرس المزلقان وسرينة القطار (Web Audio API)
 // ---------------------------------------------------------------------
-function playCrossingBellSound() {
+function playCrossingBellSound(playerDist = 999) {
   const audioCtx = (typeof getAC === 'function' ? getAC() : (typeof AC !== 'undefined' ? AC : null));
-  if (!audioCtx || typeof G === 'undefined' || !G.sound) return;
+  if (!audioCtx || typeof G === 'undefined' || !G.sound || G.state !== 'play') return;
+  if (playerDist > 110) return;
+  const att = Math.max(0, 1 - playerDist / 110);
 
   try {
     const now = audioCtx.currentTime;
-    // نغمة جرس المزلقان الميكانيكي النقي بتردد 960Hz وهارموني 1920Hz
     const osc = audioCtx.createOscillator();
     const osc2 = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(960, now);
+    osc.frequency.setValueAtTime(920, now);
 
-    osc2.type = 'triangle';
-    osc2.frequency.setValueAtTime(1920, now);
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1840, now);
 
-    // ضربة جرس حادة واضمحلال صوتي رنان
-    gain.gain.setValueAtTime(0.28, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    gain.gain.setValueAtTime(0.055 * att, now);
+    gain.gain.exponentialRampToValueAtTime(0.0005, now + 0.34);
 
     osc.connect(gain);
     osc2.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect((typeof master !== 'undefined' && master) ? master : audioCtx.destination);
 
     osc.start(now);
     osc2.start(now);
-    osc.stop(now + 0.40);
-    osc2.stop(now + 0.40);
+    osc.stop(now + 0.36);
+    osc2.stop(now + 0.36);
   } catch (_) {}
 }
 
-function playTrainHornSound() {
+function playTrainHornSound(playerDist = 999) {
   const audioCtx = (typeof getAC === 'function' ? getAC() : (typeof AC !== 'undefined' ? AC : null));
-  if (!audioCtx || typeof G === 'undefined' || !G.sound) return;
+  if (!audioCtx || typeof G === 'undefined' || !G.sound || G.state !== 'play') return;
+  if (playerDist > 150) return;
+  const att = Math.max(0, 1 - playerDist / 150);
 
   try {
     const now = audioCtx.currentTime;
-    // كلاكس قطار ديزل مصري مزدوج التردد (وتر 311Hz و 370Hz - كورد ديزل مميز)
-    const freqs = [311, 370, 466];
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(750, now);
+    lp.connect((typeof master !== 'undefined' && master) ? master : audioCtx.destination);
+
+    const freqs = [220, 277, 330];
     freqs.forEach(f => {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -876,14 +882,14 @@ function playTrainHornSound() {
       osc.frequency.setValueAtTime(f, now);
 
       gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.18, now + 0.15);
-      gain.gain.setValueAtTime(0.18, now + 1.2);
-      gain.gain.linearRampToValueAtTime(0.001, now + 1.8);
+      gain.gain.linearRampToValueAtTime(0.042 * att, now + 0.18);
+      gain.gain.setValueAtTime(0.042 * att, now + 1.1);
+      gain.gain.linearRampToValueAtTime(0.0005, now + 1.65);
 
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(lp);
       osc.start(now);
-      osc.stop(now + 1.85);
+      osc.stop(now + 1.7);
     });
   } catch (_) {}
 }
@@ -892,49 +898,44 @@ function playTrainHornSound() {
 // 8. دورة المحاكاة المستمرة للمزلقان وحركة القطار وإشارات المرور
 // ---------------------------------------------------------------------
 function updateRailwayCrossing(dt) {
+  if (typeof G !== 'undefined' && G.state !== 'play') return;
   RAILWAY_CROSSING.cycleTimer += dt;
   const rc = RAILWAY_CROSSING;
 
-  // التحقق من اقتراب اللاعب من المزلقان لبدء الإثارة
   let playerDist = 999;
   if (typeof car !== 'undefined' && car.x != null) {
     playerDist = Math.hypot(car.x - rc.center.x, car.z - rc.center.z);
   }
 
-  // إطلاق دورة مرور القطار تلقائياً كل 75 ثانية أو عند اقتراب اللاعب لأول مرة
   if (rc.state === 'idle' && (rc.cycleTimer >= rc.cycleInterval || (playerDist < 75 && rc.cycleTimer > 20))) {
     rc.state = 'warning';
     rc.timer = 0;
     rc.cycleTimer = 0;
   }
 
-  // معالجة حالات المزلقان
   if (rc.state === 'warning') {
     rc.timer += dt;
-    // رنين الجرس وميض الفوانيس المتناوب
     rc.lightPhase += dt * 2.5;
-    if (rc.timer - rc.lastBellTime >= 0.42) {
+    if (rc.timer - rc.lastBellTime >= 0.48) {
       rc.lastBellTime = rc.timer;
-      playCrossingBellSound();
+      playCrossingBellSound(playerDist);
     }
     updateCrossingLights(rc.lightPhase);
 
-    // بعد 3 ثوانٍ تحذير تبدأ الحواجز بالنزول
     if (rc.timer >= 3.0) {
       rc.state = 'lowering';
       rc.timer = 0;
-      playTrainHornSound();
+      playTrainHornSound(playerDist);
     }
   } else if (rc.state === 'lowering') {
     rc.timer += dt;
     rc.lightPhase += dt * 2.5;
-    if (rc.timer - rc.lastBellTime >= 0.42) {
+    if (rc.timer - rc.lastBellTime >= 0.48) {
       rc.lastBellTime = rc.timer;
-      playCrossingBellSound();
+      playCrossingBellSound(playerDist);
     }
     updateCrossingLights(rc.lightPhase);
 
-    // هبوط الأذرع بنعومة خلال 3.2 ثوانٍ
     const progress = Math.min(1.0, rc.timer / 3.2);
     rc.gateAngle = (1.0 - progress) * 1.25;
     if (rc.gateL) rc.gateL.rotation.x = -rc.gateAngle;
@@ -950,23 +951,21 @@ function updateRailwayCrossing(dt) {
   } else if (rc.state === 'passing') {
     rc.timer += dt;
     rc.lightPhase += dt * 2.5;
-    if (rc.timer - rc.lastBellTime >= 0.42) {
+    if (rc.timer - rc.lastBellTime >= 0.48) {
       rc.lastBellTime = rc.timer;
-      playCrossingBellSound();
+      playCrossingBellSound(playerDist);
     }
     updateCrossingLights(rc.lightPhase);
 
-    // حركة القطار بسرعة واقعية 52 كم/س (~14.5 م/ث)
     rc.trainPos += dt * 17.5;
     if (rc.train) {
       const rx = rc.railDir.x, rz = rc.railDir.z;
       rc.train.position.set(rc.center.x + rx * rc.trainPos, 0, rc.center.z + rz * rc.trainPos);
     }
 
-    // إطلاق صفارة القطار في منتصف العبور
     if (rc.timer > 3.0 && rc.timer < 3.2 && !rc.hornSounded) {
       rc.hornSounded = true;
-      playTrainHornSound();
+      playTrainHornSound(playerDist);
     }
 
     // انتهاء مرور القطار وتجاوز المزلقان بالكامل

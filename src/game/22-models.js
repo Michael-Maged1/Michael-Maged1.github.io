@@ -584,16 +584,14 @@ async function initImportedModels(){
  const allKeys=Object.keys(MODEL_PACKED);
  const queue=[];
  const priority=[
-  selected, 'qashqai',
-  'policeSuburban', 'policeDuster', 'policeBMW',
+  selected,
   'traffic_bus3d', 'traffic_hiace', 'traffic_sprinter', 'traffic_hilux', 'traffic_tuktuk',
   'traffic_kombi', 'traffic_uno', 'traffic_peugeot405', 'traffic_peugeot205', 'traffic_corolla', 'traffic_logan', 'traffic_lada', 'traffic_tucson',
   'traffic_moped', 'traffic_bicycle',
-  'man', 'woman', 'landmarkMosque', 'micro'
+  'man', 'woman', 'micro'
  ];
  for(const k of priority){if(MODEL_PACKED[k]&&!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
- for(const k of allKeys){if(!k.endsWith('_traffic')&&!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
- for(const k of allKeys){if(!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
+ for(const k of allKeys){if(k.endsWith('_traffic')&&!k.startsWith('police')&&!importedModels.loaded[k]&&!queue.includes(k))queue.push(k);}
 
  const total=queue.length;
  let completed=0;
