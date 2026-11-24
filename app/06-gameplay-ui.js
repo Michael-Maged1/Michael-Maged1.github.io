@@ -369,36 +369,25 @@ function initAudio() {
     noise.connect(bp); bp.connect(windGain); windGain.connect(master);
     noise.start();
 
-    // صرير الكاوتش الواقعي: رنين مزدوج ضيق النطاق + احتكاك المطاط بالأسفلت
+    // صرير الكاوتش الناعم: احتكاك مطاط دافئ بالأسفلت بدون صفير حاد
     const skid = AC.createBufferSource();
     skid.buffer = buf; skid.loop = true;
-    const skidRes1 = AC.createBiquadFilter();
-    skidRes1.type = 'bandpass'; skidRes1.frequency.value = 1080; skidRes1.Q.value = 7.5;
-    const skidRes2 = AC.createBiquadFilter();
-    skidRes2.type = 'bandpass'; skidRes2.frequency.value = 1820; skidRes2.Q.value = 6.0;
     const skidScrub = AC.createBiquadFilter();
-    skidScrub.type = 'bandpass'; skidScrub.frequency.value = 520; skidScrub.Q.value = 1.4;
-    const gSkid1 = AC.createGain(); gSkid1.gain.value = 0.65;
-    const gSkid2 = AC.createGain(); gSkid2.gain.value = 0.45;
-    const gScrub = AC.createGain(); gScrub.gain.value = 0.35;
+    skidScrub.type = 'bandpass'; skidScrub.frequency.value = 680; skidScrub.Q.value = 1.8;
+    const skidLp = AC.createBiquadFilter();
+    skidLp.type = 'lowpass'; skidLp.frequency.value = 1350;
     skidGain = AC.createGain(); skidGain.gain.value = 0;
-    skid.connect(skidRes1); skidRes1.connect(gSkid1); gSkid1.connect(skidGain);
-    skid.connect(skidRes2); skidRes2.connect(gSkid2); gSkid2.connect(skidGain);
-    skid.connect(skidScrub); skidScrub.connect(gScrub); gScrub.connect(skidGain);
+    skid.connect(skidScrub); skidScrub.connect(skidLp); skidLp.connect(skidGain);
     skidGain.connect(master);
     skid.start();
 
-    // احتكاك الفرامل الواقعي: همهمة تيل الفرامل المنخفضة + همس قرص الفرامل
+    // صوت فرامل ناعم وواقعي من داخل المقصورة (بدون صفير أو وش مزعج)
     const brakeSrc = AC.createBufferSource();
     brakeSrc.buffer = buf; brakeSrc.loop = true;
     const brakeLp = AC.createBiquadFilter();
-    brakeLp.type = 'lowpass'; brakeLp.frequency.value = 460;
-    const brakePad = AC.createBiquadFilter();
-    brakePad.type = 'bandpass'; brakePad.frequency.value = 2450; brakePad.Q.value = 3.2;
-    const gBrakePad = AC.createGain(); gBrakePad.gain.value = 0.18;
+    brakeLp.type = 'lowpass'; brakeLp.frequency.value = 260;
     brakeGain = AC.createGain(); brakeGain.gain.value = 0;
     brakeSrc.connect(brakeLp); brakeLp.connect(brakeGain);
-    brakeSrc.connect(brakePad); brakePad.connect(gBrakePad); gBrakePad.connect(brakeGain);
     brakeGain.connect(master);
     brakeSrc.start();
 
@@ -5160,11 +5149,11 @@ function loop() {
 
       windGain.gain.setTargetAtTime(on ? (Math.pow(clamp(sp / maxSp, 0, 1), 1.4) * .048) * duckWind : 0, AC.currentTime, .2);
       const brakingInput = keys.KeyS || keys.ArrowDown || touch.brk || keys.Space || touch.hb;
-      const drifting = Math.abs(car.latVel || 0) > 4.5 && sp > 7;
-      skidGain.gain.setTargetAtTime(on && ((keys.Space || touch.hb) && sp > 8 || drifting) ? .062 : 0, AC.currentTime, .07);
+      const drifting = Math.abs(car.latVel || 0) > 6.5 && sp > 10;
+      skidGain.gain.setTargetAtTime(on && ((keys.Space || touch.hb) && sp > 10 || drifting) ? .026 : 0, AC.currentTime, .08);
       if (brakeGain) {
         const brakePressure = car.brakePedal || (brakingInput ? 1 : 0);
-        brakeGain.gain.setTargetAtTime(on && brakingInput && sp > 3 ? .014 + Math.min(.036, brakePressure * .036) : 0, AC.currentTime, .055);
+        brakeGain.gain.setTargetAtTime(on && brakingInput && sp > 4 ? Math.min(.014, .005 + brakePressure * .009) : 0, AC.currentTime, .06);
       }
       if (seaGain) {
         const nearSea = clamp(1 - (car.z - 12) / 40, 0, 1);

@@ -55,11 +55,11 @@ function loop() {
 
       windGain.gain.setTargetAtTime(on ? (Math.pow(clamp(sp / maxSp, 0, 1), 1.4) * .048) * duckWind : 0, AC.currentTime, .2);
       const brakingInput = keys.KeyS || keys.ArrowDown || touch.brk || keys.Space || touch.hb;
-      const drifting = Math.abs(car.latVel || 0) > 4.5 && sp > 7;
-      skidGain.gain.setTargetAtTime(on && ((keys.Space || touch.hb) && sp > 8 || drifting) ? .062 : 0, AC.currentTime, .07);
+      const drifting = Math.abs(car.latVel || 0) > 6.5 && sp > 10;
+      skidGain.gain.setTargetAtTime(on && ((keys.Space || touch.hb) && sp > 10 || drifting) ? .026 : 0, AC.currentTime, .08);
       if (brakeGain) {
         const brakePressure = car.brakePedal || (brakingInput ? 1 : 0);
-        brakeGain.gain.setTargetAtTime(on && brakingInput && sp > 3 ? .014 + Math.min(.036, brakePressure * .036) : 0, AC.currentTime, .055);
+        brakeGain.gain.setTargetAtTime(on && brakingInput && sp > 4 ? Math.min(.014, .005 + brakePressure * .009) : 0, AC.currentTime, .06);
       }
       if (seaGain) {
         const nearSea = clamp(1 - (car.z - 12) / 40, 0, 1);
