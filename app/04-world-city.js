@@ -3643,8 +3643,11 @@ function addCelebrationZaffaPickup() {
   VILLAGE_ROADS.targetSeg = targetSeg;
 
   const t = 0.52;
-  const px = lerp(targetSeg.a.x, targetSeg.b.x, t);
-  const pz = lerp(targetSeg.a.z, targetSeg.b.z, t);
+  const nx = -(targetSeg.b.z - targetSeg.a.z) / Math.max(1, targetSeg.length);
+  const nz = (targetSeg.b.x - targetSeg.a.x) / Math.max(1, targetSeg.length);
+  const sideShift = Math.max(0.8, targetSeg.width / 2 - 1.15);
+  const px = lerp(targetSeg.a.x, targetSeg.b.x, t) + nx * sideShift;
+  const pz = lerp(targetSeg.a.z, targetSeg.b.z, t) + nz * sideShift;
   const heading = Math.atan2(targetSeg.b.x - targetSeg.a.x, targetSeg.b.z - targetSeg.a.z);
   const groundY = (typeof assyutRoadHeightAt === 'function') ? assyutRoadHeightAt(px, pz) : 0.03;
 
@@ -3652,59 +3655,31 @@ function addCelebrationZaffaPickup() {
   zaffaGroup.position.set(px, groundY, pz);
   zaffaGroup.rotation.y = heading;
 
-  // هيكل بيك أب شفروليه الدبابة / هايلوكس أبيض مصري
-  const whitePaint = new THREE.MeshStandardMaterial({ color: 0xf5f5f7, roughness: 0.28, metalness: 0.2, envMapIntensity: 0.9 });
-  const darkGlass = new THREE.MeshStandardMaterial({ color: 0x1a242c, roughness: 0.12, metalness: 0.8, envMapIntensity: 1.2 });
-  const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe0e6ed, roughness: 0.18, metalness: 0.9, envMapIntensity: 1.5 });
-  const blackPlast = new THREE.MeshStandardMaterial({ color: 0x222224, roughness: 0.82 });
-  const tireMat = new THREE.MeshStandardMaterial({ color: 0x1d1e20, roughness: 0.88 });
-
-  // كابينة السائق
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.78, 1.05, 1.75), whitePaint);
-  cab.position.set(0, 0.95, 0.35);
-  cab.castShadow = true;
-  zaffaGroup.add(cab);
-
-  // الزجاج الأمامي
-  const windGlass = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.65, 0.15), darkGlass);
-  windGlass.position.set(0, 1.15, 1.18);
-  windGlass.rotation.x = -0.32;
-  zaffaGroup.add(windGlass);
-
-  // الكبوت ومقدمة السيارة
-  const hood = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.58, 1.25), whitePaint);
-  hood.position.set(0, 0.72, 1.75);
-  hood.castShadow = true;
-  zaffaGroup.add(hood);
-
-  // الشبك والصدام
-  const grill = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.32, 0.08), chromeMat);
-  grill.position.set(0, 0.68, 2.38);
-  zaffaGroup.add(grill);
-
-  // الكشافات الأمامية المضيئة
-  const headlampMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff6cf, emissiveIntensity: 0.8 });
-  for (const sx of [-0.68, 0.68]) {
-    const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.22, 0.08), headlampMat);
-    lamp.position.set(sx, 0.72, 2.38);
-    zaffaGroup.add(lamp);
+  // تسجيل جسم تصادم حقيقي للبيك أب حتى لا تخترقها سيارة اللاعب
+  if (typeof MAP !== 'undefined' && Array.isArray(MAP.buildings)) {
+    const obbYaw = -Math.atan2(targetSeg.b.z - targetSeg.a.z, targetSeg.b.x - targetSeg.a.x);
+    const hl = 2.45, hw = 1.02;
+    const ex = Math.abs(Math.cos(obbYaw)) * hl + Math.abs(Math.sin(obbYaw)) * hw;
+    const ez = Math.abs(Math.sin(obbYaw)) * hl + Math.abs(Math.cos(obbYaw)) * hw;
+    MAP.buildings.push({ x0: px - ex, x1: px + ex, z0: pz - ez, z1: pz + ez, h: 2.0, oriented: { x: px, z: pz, heading: obbYaw, hl, hw } });
   }
 
-  // حوض النقل الخلفي (Bed)
-  const bedFloor = new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.25, 2.35), whitePaint);
-  bedFloor.position.set(0, 0.55, -1.35);
-  bedFloor.castShadow = true;
-  zaffaGroup.add(bedFloor);
-
-  // جوانب الحوض
-  for (const sx of [-0.85, 0.85]) {
-    const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.52, 2.35), whitePaint);
-    sideWall.position.set(sx, 0.86, -1.35);
-    zaffaGroup.add(sideWall);
+  // تحميل مجسم البيك أب ثلاثي الأبعاد الحقيقي (traffic_hilux) بدلاً من الصناديق البدائية
+  function attachRealPickup() {
+    if (typeof vehicleVisual !== 'function' || typeof importedModels === 'undefined' || !importedModels?.loaded?.traffic_hilux) return false;
+    const hilux = vehicleVisual('traffic_hilux', 0xf5f5f7);
+    if (!hilux) return false;
+    hilux.rotation.y = -Math.PI / 2;
+    zaffaGroup.add(hilux);
+    return true;
   }
-  const rearTailgate = new THREE.Mesh(new THREE.BoxGeometry(1.78, 0.52, 0.08), whitePaint);
-  rearTailgate.position.set(0, 0.86, -2.52);
-  zaffaGroup.add(rearTailgate);
+  if (!attachRealPickup() && typeof setInterval === 'function') {
+    let tries = 0;
+    const timer = setInterval(() => {
+      tries++;
+      if (attachRealPickup() || tries > 30) clearInterval(timer);
+    }, 500);
+  }
 
   // يافطة حنة أم شيماء على الباب الخلفي (Tailgate celebration banner)
   const bannerTex = canvasTex(256, 96, g => {
@@ -3722,42 +3697,10 @@ function addCelebrationZaffaPickup() {
     g.fillText('ألف مبروك للعروسين', 128, 76);
   });
   const bannerMat = new THREE.MeshBasicMaterial({ map: bannerTex });
-  const bannerMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.42), bannerMat);
-  bannerMesh.position.set(0, 0.88, -2.57);
+  const bannerMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.42, 0.40), bannerMat);
+  bannerMesh.position.set(0, 0.92, -2.42);
   bannerMesh.rotation.y = Math.PI;
   zaffaGroup.add(bannerMesh);
-
-  // حديد الحماية فوق الحوض (Roll bar)
-  const barMat = chromeMat;
-  for (const sx of [-0.78, 0.78]) {
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.85, 8), barMat);
-    post.position.set(sx, 1.35, -0.28);
-    zaffaGroup.add(post);
-  }
-  const topBar = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.62, 8), barMat);
-  topBar.rotation.z = Math.PI / 2;
-  topBar.position.set(0, 1.76, -0.28);
-  zaffaGroup.add(topBar);
-
-  // العجلات الأربع
-  const wheelGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.28, 16);
-  wheelGeo.rotateZ(Math.PI / 2);
-  const wheelPositions = [
-    [-0.85, 0.38, 1.55],
-    [0.85, 0.38, 1.55],
-    [-0.85, 0.38, -1.45],
-    [0.85, 0.38, -1.45]
-  ];
-  for (const [wx, wy, wz] of wheelPositions) {
-    const wheel = new THREE.Mesh(wheelGeo, tireMat);
-    wheel.position.set(wx, wy, wz);
-    wheel.castShadow = true;
-    zaffaGroup.add(wheel);
-    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.29, 12), chromeMat);
-    rim.rotateZ(Math.PI / 2);
-    rim.position.set(wx, wy, wz);
-    zaffaGroup.add(rim);
-  }
 
   // باقة بالونات الهيليوم المبهجة (22 بالونة ملونة تطفو وتهتز في الهواء)
   const balloonColors = [
