@@ -3074,9 +3074,9 @@ function resolveInfrastructureRails(){
   const bh=b.height??.70;
   // حاجز الكوبري لا ينتمي إلا لسطح الطريق الذي بُني عليه؛ هذا يمنع
   // اصطدام السيارة بحاجز قريب وهي تسير فوق كوبري آخر.
-  const sameDeck=car.surfaceRoad===b.road||driveSurfaceCandidates(car.x,car.z).some(p=>p.road===b.road&&p.distance<p.s.width/2+1.25);
+  const sameDeck=b.kind==='tunnel'?(Number.isInteger(car.surfaceRoad)?car.surfaceRoad===b.road:driveSurfaceCandidates(car.x,car.z).some(p=>p.road===b.road&&p.distance<p.s.width/2+0.6)):(car.surfaceRoad===b.road||driveSurfaceCandidates(car.x,car.z).some(p=>p.road===b.road&&p.distance<p.s.width/2+1.25));
   const bridgeHeightOverlap = b.kind === 'bridge' && (car.y + 1.80 > b.h - 0.45) && (car.y < b.h + bh + 0.2);
-  const solid=b.kind==='tunnel'?(car.y<-0.25&&sameDeck&&car.y+1.5>=b.h&&car.y<=b.h+bh+.3):((sameDeck&&Math.abs(car.y-b.h)<1.35)||bridgeHeightOverlap);
+  const solid=b.kind==='tunnel'?(car.y<-0.25&&sameDeck&&Math.abs(car.y-b.h)<1.8):((sameDeck&&Math.abs(car.y-b.h)<1.35)||bridgeHeightOverlap);
   if(!solid)continue;
   const hit=obbContact(playerBounds(),b);if(hit)recordImpact(staticContact(hit),'حاجز الطريق · خفّف السرعة');
  }
